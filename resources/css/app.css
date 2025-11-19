@@ -6,6 +6,7 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant cream (&:is(.cream *));
 
 @theme {
     --font-sans:
@@ -62,8 +63,8 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --background: oklch(1 0 0); /* color blanco */
+    --foreground: oklch(0.145 0 0); /* color negro */
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
@@ -130,6 +131,113 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+}
+
+
+/* probando nuevo estilo */
+.cream {
+    /* ----------------------------------------------------- */
+    /* FONDOS Y TEXTOS PRINCIPALES */
+    /* ----------------------------------------------------- */
+    --background: oklch(0.97 0.02 90);      /* Fondo principal: Beige cremoso */
+    --foreground: oklch(0.25 0.05 60);      /* Texto principal: Marrón oscuro suave */
+
+    --card: oklch(1 0 0);                   /* Fondo de Tarjeta: Blanco puro */
+    --card-foreground: oklch(0.25 0.05 60); /* Texto de Tarjeta: Marrón oscuro */
+
+    --popover: var(--card);                 /* Popovers usan el color de la tarjeta */
+    --popover-foreground: var(--foreground);
+
+    /* ----------------------------------------------------- */
+    /* COLORES PRIMARIOS (Acción y Botones) */
+    /* ----------------------------------------------------- */
+    --primary: oklch(0.55 0.15 60);         /* Botón Primario: Tono Caramelo/Marrón cálido */
+    --primary-foreground: oklch(1 0 0);     /* Texto del botón: Blanco */
+
+    --secondary: oklch(0.9 0.02 90);        /* Fondo Secundario: Beige ligeramente más oscuro */
+    --secondary-foreground: oklch(0.25 0.05 60); /* Texto secundario: Marrón oscuro */
+    
+    /* ----------------------------------------------------- */
+    /* COLORES NEUTROS Y ESTADO */
+    /* ----------------------------------------------------- */
+    --muted: oklch(0.9 0.02 90);            /* Elementos muteados (ej. fondos de input deshabilitados) */
+    --muted-foreground: oklch(0.5 0.05 60); /* Texto muteado: Gris/marrón medio */
+
+    --accent: oklch(0.9 0.02 90);           /* Fondo de acento */
+    --accent-foreground: oklch(0.25 0.05 60); /* Texto de acento */
+
+    --destructive: oklch(0.577 0.245 27.325); /* Rojo/Destructivo (Se mantiene estándar si no se redefine) */
+    --destructive-foreground: oklch(1 0 0);
+
+    /* ----------------------------------------------------- */
+    /* BORDES E INPUTS */
+    /* ----------------------------------------------------- */
+    --border: oklch(0.85 0.02 90);          /* Bordes suaves */
+    --input: oklch(0.95 0.02 90);           /* Fondo de Input ligeramente más oscuro que el fondo principal */
+    --ring: oklch(0.7 0.05 60);             /* Anillo de enfoque: Marrón suave */
+
+    /* ----------------------------------------------------- */
+    /* SIDEBAR (Barra Lateral) */
+    /* ----------------------------------------------------- */
+    --sidebar: oklch(0.95 0.02 90);         /* Fondo del Sidebar: Beige un poco más oscuro que el fondo */
+    --sidebar-foreground: oklch(0.25 0.05 60);
+    --sidebar-primary: oklch(0.55 0.15 60);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.85 0.02 90);
+    --sidebar-accent-foreground: oklch(0.25 0.05 60);
+    --sidebar-border: oklch(0.8 0.02 90);
+    --sidebar-ring: oklch(0.7 0.05 60);
+}
+
+.marino{
+    --background: oklch(0.15 0.05 250);      
+    --foreground: oklch(0.95 0.02 90);       
+
+    --card: oklch(0.2 0.03 250);            
+    --card-foreground: oklch(0.95 0.02 90); 
+
+    --popover: var(--card);                 
+    --popover-foreground: var(--foreground);
+
+    /* ----------------------------------------------------- */
+    /* COLORES PRIMARIOS (Acción y Botones) */
+    /* ----------------------------------------------------- */
+    --primary: oklch(0.3 0.1 240);          
+    --primary-foreground: oklch(1 0 0);     
+
+    --secondary: oklch(0.2 0.03 250);       
+    --secondary-foreground: oklch(0.95 0.02 90); 
+    
+    /* ----------------------------------------------------- */
+    /* COLORES NEUTROS Y ESTADO */
+    /* ----------------------------------------------------- */
+    --muted: oklch(0.18 0.02 250);          
+    --muted-foreground: oklch(0.6 0.05 240);
+
+    --accent: oklch(0.3 0.1 240);             
+    --accent-foreground: oklch(0.95 0.02 90); 
+
+    --destructive: oklch(0.577 0.245 27.325); 
+    --destructive-foreground: oklch(1 0 0);
+
+    /* ----------------------------------------------------- */
+    /* BORDES E INPUTS */
+    /* ----------------------------------------------------- */
+    --border: oklch(0.2 0.03 250);          
+    --input: oklch(0.25 0.04 250);          
+    --ring: oklch(0.4 0.1 240);             
+
+    /* ----------------------------------------------------- */
+    /* SIDEBAR (Barra Lateral) */
+    /* ----------------------------------------------------- */
+    --sidebar: oklch(0.2 0.03 250);         
+    --sidebar-foreground: oklch(0.95 0.02 90);
+    --sidebar-primary: oklch(0.3 0.1 240);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.25 0.04 250);
+    --sidebar-accent-foreground: oklch(0.95 0.02 90);
+    --sidebar-border: oklch(0.18 0.02 250);
+    --sidebar-ring: oklch(0.4 0.1 240);
 }
 
 @layer base {

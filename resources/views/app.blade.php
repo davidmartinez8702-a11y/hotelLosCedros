@@ -16,6 +16,10 @@
                         document.documentElement.classList.add('dark');
                     }
                 }
+                
+                if (appearance === 'cream') {
+                    document.documentElement.classList.add('cream');
+                }
             })();
         </script>
 

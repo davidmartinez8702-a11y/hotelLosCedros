@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Appearance = 'light' | 'dark' | 'system';
+export type Appearance = 'light' | 'dark' | 'system' | 'cream';
 
 const prefersDark = () => {
     if (typeof window === 'undefined') {
@@ -19,14 +19,37 @@ const setCookie = (name: string, value: string, days = 365) => {
     document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
 };
 
+// const applyTheme = (appearance: Appearance) => {
+//     const isDark =
+//         appearance === 'dark' || (appearance === 'system' && prefersDark());
+
+//     document.documentElement.classList.toggle('dark', isDark);
+//     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+// };
 const applyTheme = (appearance: Appearance) => {
+    
+    document.documentElement.classList.remove('light', 'dark', 'cream'); 
+
     const isDark =
         appearance === 'dark' || (appearance === 'system' && prefersDark());
 
-    document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    //Aplicar la clase 'dark' si es necesario (para los modos dark/system).
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+    } 
+    // Aplicar la clase 'cream' si es necesario.
+    else if (appearance === 'cream') {
+        document.documentElement.classList.add('cream');
+        // El colorScheme se queda como 'light' o se establece en base a la configuración del tema.
+        // Lo dejamos en 'light' ya que el modo crema es claro.
+        document.documentElement.style.colorScheme = 'light'; 
+    } 
+    // 4. Si es 'light', no se añade ninguna clase, pero se asegura que 'colorScheme' sea light.
+    else { 
+        document.documentElement.style.colorScheme = 'light';
+    }
 };
-
 const mediaQuery = () => {
     if (typeof window === 'undefined') {
         return null;

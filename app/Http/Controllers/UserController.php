@@ -75,18 +75,15 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         ];
     
-        // Solo validar password si se proporciona
         if ($request->filled('password')) {
             $rules['password'] = 'required|string|min:8|confirmed';
         }
     
         $validated = $request->validate($rules);
     
-        // Actualiza nombre y email
         $user->name = $validated['name'];
         $user->email = $validated['email'];
     
-        // Solo actualiza la contraseña si se proporcionó
         if ($request->filled('password')) {
             $user->password = bcrypt($validated['password']);
         }
