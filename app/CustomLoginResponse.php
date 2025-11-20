@@ -23,12 +23,17 @@ class CustomLoginResponse implements LoginResponse
 
         // 2. Lógica de Redirección Condicional
     
-        if ($user->hasRole('admin') || $user->hasRole('super-admin')) {
-            // Usamos route('dashboard.admin') que definiste en web.php
-            return redirect()->intended(route('dashboard.admin')); 
+        if ($user->hasRole('administrador')) {
+            return redirect()->intended(route('dashboard.administrador')); 
         }
+        if( $user -> hasRole('recepcionista')){
+            return redirect()->intended(route('dashboard.recepcion'));
 
-        
-        return redirect()->intended(route('dashboard.user')); 
+        }
+        if ($user->hasRole('cliente')) {
+            return redirect()->intended(route('dashboard.cliente'));
+        }
+        // si no tiene rol especifico
+        return redirect()->intended(config('fortify.home', '/dashboard'));
     }
 }

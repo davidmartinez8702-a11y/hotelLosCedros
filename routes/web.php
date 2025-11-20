@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
@@ -18,6 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
+    Route::get('admin/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard.administrador');
+    Route::get('recepcion/dashboard', [AuthController::class, 'recepcionDashboard'])->name('dashboard.recepcion');
+    Route::get('cliente/dashboard', [AuthController::class, 'clientDashboard'])->name('dashboard.cliente');
 
     Route::prefix('usuarios')->name('usuarios.')->group(function(){
         Route::get('/', [UserController::class, 'index'])->name('index');
