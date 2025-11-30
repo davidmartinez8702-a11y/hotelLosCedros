@@ -1,13 +1,14 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
+import { cliente } from '@/routes/dashboard';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard Cliente',
-        href: dashboard().url,
+        href: cliente().url,
     },
 ];
 

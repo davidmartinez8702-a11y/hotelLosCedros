@@ -19,10 +19,17 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $table = 'users';
     protected $fillable = [
         'name',
         'email',
         'password',
+        'username',
+        'edad',
+        'sexo',
+        'telefono',
+        'profile_icon',
+        'tipo_nacionalidad',
     ];
 
     /**
@@ -49,5 +56,17 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class);
+    }
+    public function documento()
+    {
+        return $this->hasOne(Documento::class);
+    }
+    public function comentarios()
+    {
+        return $this->hasMany(Comentario::class);
     }
 }

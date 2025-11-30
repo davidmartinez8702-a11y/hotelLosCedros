@@ -33,7 +33,6 @@ class UserRoleAssignmentSeeder extends Seeder
                 ]
             );
 
-            // 2. Asignar el rol
             $user->assignRole($userData['role']);
 
             $this->command->info("Usuario '{$userData['name']}' creado/actualizado y asignado a rol '{$userData['role']}'");
