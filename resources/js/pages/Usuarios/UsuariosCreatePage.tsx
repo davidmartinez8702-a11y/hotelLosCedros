@@ -1,45 +1,62 @@
-import React, { useEffect } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout'; 
+import React, { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowLeft } from 'lucide-react'; 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 import { route } from 'ziggy-js';
-import { toast } from 'sonner';
 
-const breadcrumbs = [
-    { title: 'Usuarios', href: route('usuarios.index') }, 
-    { title: 'Crear', href: route('usuarios.create') }
+interface UserFormData {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    edad: string;
+    sexo: string;
+    telefono: string;
+    tipo_nacionalidad: string;
+    role: string;
+}
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Usuarios',
+        href: '/usuarios',
+    },
+    {
+        title: 'Crear Usuario',
+        href: '/usuarios/create',
+    },
 ];
 
 export default function UsuariosCreatePage() {
-    
-    // ✅ useForm maneja los errores automáticamente
-    const { data, setData, post, processing, errors, reset, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, errors } = useForm<UserFormData>({
         name: '',
+        username: '',
         email: '',
         password: '',
         password_confirmation: '',
+        edad: '',
+        sexo: '',
+        telefono: '',
+        tipo_nacionalidad: 'nacional',
+        role: 'cliente',
     });
 
-    useEffect(() => {
-        if (recentlySuccessful) {
-            toast.success('¡Usuario creado exitosamente!', {
-                description: 'Puedes crear otro usuario si lo deseas.',
-            });
-            reset(); // Limpia todos los campos
-            // Opcional: Mostrar un toast
-           // toast.success('Usuario creado exitosamente. Puedes crear otro.');
-        }
-    }, [recentlySuccessful]);
-    const submit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('usuarios.store'),{
-            preserveScroll: true,
-            onSuccess: () => {}
-        });
+        post(route('usuarios.store'));
     };
 
     return (
@@ -47,113 +64,226 @@ export default function UsuariosCreatePage() {
             <Head title="Crear Usuario" />
 
             <div className="py-8 lg:py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    
-                    <Link 
-                        href={route('usuarios.index')} 
-                        className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 mb-6"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Volver al listado
-                    </Link>
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Link href="/usuarios">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Crear Usuario</h1>
+                            <p className="text-muted-foreground">
+                                Completa el formulario para crear un nuevo usuario
+                            </p>
+                        </div>
+                    </div>
 
-                    <Card className="shadow-xl">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-2xl">Crear Nuevo Usuario</CardTitle>
+                            <CardTitle>Información del Usuario</CardTitle>
                             <CardDescription>
-                                Ingrese la información del nuevo usuario y su contraseña inicial.
+                                Todos los campos marcados con * son obligatorios
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {recentlySuccessful && (
-                                <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
-                                    ✓ Usuario creado exitosamente. Puedes crear otro.
-                                </div>
-                            )}
-                            
-                            <form onSubmit={submit} className="space-y-6">
-                                
-                                {/* Campo Nombre */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Nombre Completo</Label>
-                                    <Input 
-                                        id="name" 
-                                        type="text" 
-                                        placeholder="Fernando Tello" 
-                                        value={data.name} 
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        className={errors.name ? 'border-red-500' : ''}
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                    )}
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    {/* Nombre */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            Nombre Completo <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            placeholder="Ej: Juan Pérez"
+                                            required
+                                        />
+                                        {errors.name && (
+                                            <p className="text-sm text-destructive">{errors.name}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Username */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">
+                                            Username <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="username"
+                                            value={data.username}
+                                            onChange={(e) => setData('username', e.target.value)}
+                                            placeholder="Ej: juan_perez"
+                                            required
+                                        />
+                                        {errors.username && (
+                                            <p className="text-sm text-destructive">{errors.username}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Email */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">
+                                            Email <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder="Ej: juan@example.com"
+                                            required
+                                        />
+                                        {errors.email && (
+                                            <p className="text-sm text-destructive">{errors.email}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Teléfono */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="telefono">Teléfono</Label>
+                                        <Input
+                                            id="telefono"
+                                            value={data.telefono}
+                                            onChange={(e) => setData('telefono', e.target.value)}
+                                            placeholder="Ej: 555-1234"
+                                        />
+                                        {errors.telefono && (
+                                            <p className="text-sm text-destructive">{errors.telefono}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Edad */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edad">Edad</Label>
+                                        <Input
+                                            id="edad"
+                                            type="number"
+                                            min="1"
+                                            max="120"
+                                            value={data.edad}
+                                            onChange={(e) => setData('edad', e.target.value)}
+                                            placeholder="Ej: 25"
+                                        />
+                                        {errors.edad && (
+                                            <p className="text-sm text-destructive">{errors.edad}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Sexo */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="sexo">Sexo</Label>
+                                        <Select value={data.sexo} onValueChange={(value) => setData('sexo', value)}>
+                                            <SelectTrigger id="sexo">
+                                                <SelectValue placeholder="Seleccionar sexo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="M">Masculino</SelectItem>
+                                                <SelectItem value="F">Femenino</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.sexo && (
+                                            <p className="text-sm text-destructive">{errors.sexo}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Tipo Nacionalidad */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tipo_nacionalidad">
+                                            Tipo de Nacionalidad <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.tipo_nacionalidad}
+                                            onValueChange={(value) => setData('tipo_nacionalidad', value)}
+                                        >
+                                            <SelectTrigger id="tipo_nacionalidad">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="nacional">Nacional</SelectItem>
+                                                <SelectItem value="extranjero">Extranjero</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.tipo_nacionalidad && (
+                                            <p className="text-sm text-destructive">{errors.tipo_nacionalidad}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Rol */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="role">
+                                            Rol <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.role}
+                                            onValueChange={(value) => setData('role', value)}
+                                        >
+                                            <SelectTrigger id="role">
+                                                <SelectValue placeholder="Seleccionar rol" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="administrador">Administrador</SelectItem>
+                                                <SelectItem value="cliente">Cliente</SelectItem>
+                                                <SelectItem value="recepcionista">Recepcionista</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {/* @ts-ignore */}
+                                        {errors.role && (
+                                            /* @ts-ignore */
+                                            <p className="text-sm text-destructive">{errors.role}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">
+                                            Contraseña <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            value={data.password}
+                                            onChange={(e) => setData('password', e.target.value)}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                        {errors.password && (
+                                            <p className="text-sm text-destructive">{errors.password}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Confirmar Password */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password_confirmation">
+                                            Confirmar Contraseña <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="password_confirmation"
+                                            type="password"
+                                            value={data.password_confirmation}
+                                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                        {errors.password_confirmation && (
+                                            <p className="text-sm text-destructive">{errors.password_confirmation}</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {/* Campo Email */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Correo Electrónico</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email" 
-                                        placeholder="usuario@ejemplo.com" 
-                                        value={data.email} 
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        className={errors.email ? 'border-red-500' : ''}
-                                    />
-                                    {errors.email && (
-                                        <p className="text-sm text-red-600">{errors.email}</p>
-                                    )}
-                                </div>
-
-                                {/* Campo Contraseña */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Contraseña</Label>
-                                    <Input 
-                                        id="password" 
-                                        type="password" 
-                                        placeholder="••••••••" 
-                                        value={data.password} 
-                                        onChange={(e) => setData('password', e.target.value)}
-                                        className={errors.password ? 'border-red-500' : ''}
-                                    />
-                                    {errors.password && (
-                                        <p className="text-sm text-red-600">{errors.password}</p>
-                                    )}
-                                </div>
-
-                                {/* Campo Confirmar Contraseña */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="password_confirmation">Confirmar Contraseña</Label>
-                                    <Input 
-                                        id="password_confirmation" 
-                                        type="password" 
-                                        placeholder="••••••••" 
-                                        value={data.password_confirmation} 
-                                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    />
-                                </div>
-
-                                {/* Botón de Envío */}
                                 <div className="flex justify-end gap-4">
-                                    <Button 
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => reset()}
-                                        disabled={processing}
-                                    >
-                                        Limpiar
-                                    </Button>
-                                    <Button 
-                                        disabled={processing} 
-                                        type="submit" 
-                                        className="w-full sm:w-auto"
-                                    >
-                                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Crear Usuario
+                                    <Link href="/usuarios">
+                                        <Button type="button" variant="outline">
+                                            Cancelar
+                                        </Button>
+                                    </Link>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Creando...' : 'Crear Usuario'}
                                     </Button>
                                 </div>
                             </form>
-
                         </CardContent>
                     </Card>
                 </div>

@@ -1,219 +1,318 @@
-import React, { useEffect } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout'; 
+import React, { useState, useEffect } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowLeft } from 'lucide-react'; 
-import { route } from 'ziggy-js';
-import { toast } from 'sonner';
-import { UserProp } from './usuarios';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft } from 'lucide-react';
 
-interface UsuariosUpdatePageProps {
-    usuario: UserProp;
+interface User {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    edad: number | null;
+    sexo: 'M' | 'F' | null;
+    telefono: string | null;
+    tipo_nacionalidad: string;
+    email_verified_at: string | null;
+    role: 'administrador' | 'cliente' | 'recepcionista';
 }
 
-export default function UsuariosUpdatePage({ usuario }: UsuariosUpdatePageProps) {
-    
-    const breadcrumbs = [
-        { title: 'Usuarios', href: route('usuarios.index') }, 
-        { title: 'Editar', href: route('usuarios.edit', usuario.id) }
+interface UserFormData {
+    name: string;
+    username: string;
+    email: string;
+    edad: string;
+    sexo: string;
+    telefono: string;
+    tipo_nacionalidad: string;
+    email_verified_at: boolean;
+    role: string;
+}
+
+// Eliminamos STATIC_USERS
+
+interface Props {
+    user: User;
+}
+
+import { route } from 'ziggy-js';
+
+export default function UsuariosUpdatePage({ user }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Usuarios',
+            href: '/usuarios',
+        },
+        {
+            title: 'Editar Usuario',
+            href: `/usuarios/${user.id}/edit`,
+        },
     ];
 
-    // ✅ Inicializa el formulario con los datos del usuario
-    const { data, setData, put, processing, errors, reset, recentlySuccessful, isDirty } = useForm({
-        name: usuario.name || '',
-        email: usuario.email || '',
-        password: '',
-        password_confirmation: '',
+    const { data, setData, put, processing, errors } = useForm<UserFormData>({
+        name: user?.name || '',
+        username: user?.username || '',
+        email: user?.email || '',
+        edad: user?.edad?.toString() || '',
+        sexo: user?.sexo || '',
+        telefono: user?.telefono || '',
+        tipo_nacionalidad: user?.tipo_nacionalidad || 'nacional',
+        email_verified_at: !!user?.email_verified_at,
+        role: user?.role || 'cliente',
     });
 
-    useEffect(() => {
-        if (recentlySuccessful) {
-            toast.success('¡Usuario actualizado exitosamente!', {
-                description: 'Los cambios han sido guardados.',
-            });
-            // Limpia solo los campos de contraseña
-            setData({
-                ...data,
-                password: '',
-                password_confirmation: '',
-            });
-        }
-    }, [recentlySuccessful]);
-
-    const submit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Si no se ingresó contraseña, no la enviamos
-        // const dataToSend = data.password 
-        // ? { 
-        //     name: data.name, 
-        //     email: data.email, 
-        //     password: data.password, 
-        //     password_confirmation: data.password_confirmation 
-        //   }
-        // : { 
-        //     name: data.name, 
-        //     email: data.email 
-        //   };
-        //   put(route('usuarios.update', usuario.id), {
-        //     preserveScroll: true,
-        //     onBefore: () => {
-        //         // Modifica los datos del formulario temporalmente
-        //         Object.keys(dataToSend).forEach(key => {
-        //             if (!(key in dataToSend)) {
-        //                 delete (data as any)[key];
-        //             }
-        //         });
-        //     },
-        //     onError: () => {
-        //         toast.error('Error al actualizar usuario', {
-        //             description: 'Por favor revisa los campos marcados en rojo.',
-        //         });
-        //     }
-        // });
-
-        put(route('usuarios.update', usuario.id), {
-            preserveScroll: true,
-            onError: () => {
-                toast.error('Error al actualizar usuario', {
-                    description: 'Por favor revisa los campos marcados en rojo.',
-                });
-            }
-        });
+        put(route('usuarios.update', user.id));
     };
 
-    const handleCancel = () => {
-        if (isDirty) {
-            if (confirm('¿Descartar los cambios realizados?')) {
-                reset();
-            }
-        }
-    };
+    if (!user) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <Head title="Usuario no encontrado" />
+                <div className="py-8 lg:py-12">
+                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                        <Card>
+                            <CardContent className="pt-6">
+                                <p className="text-center text-muted-foreground">Usuario no encontrado</p>
+                                <div className="mt-4 flex justify-center">
+                                    <Link href="/usuarios">
+                                        <Button>Volver a Usuarios</Button>
+                                    </Link>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Editar Usuario: ${usuario.name}`} />
+            <Head title={`Editar Usuario - ${user.name}`} />
 
             <div className="py-8 lg:py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    
-                    <Link 
-                        href={route('usuarios.index')} 
-                        className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 mb-6"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Volver al listado
-                    </Link>
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Link href="/usuarios">
+                            <Button variant="ghost" size="icon">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <div className="flex-1">
+                            <h1 className="text-3xl font-bold tracking-tight">Editar Usuario</h1>
+                            <p className="text-muted-foreground">
+                                Actualiza la información del usuario
+                            </p>
+                        </div>
+                        <Badge variant={data.email_verified_at ? 'default' : 'destructive'}>
+                            {data.email_verified_at ? 'Email Verificado' : 'Email No Verificado'}
+                        </Badge>
+                    </div>
 
-                    <Card className="shadow-xl">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-2xl">Editar Usuario</CardTitle>
+                            <CardTitle>Información del Usuario</CardTitle>
                             <CardDescription>
-                                Actualiza la información del usuario. Deja los campos de contraseña vacíos si no deseas cambiarla.
+                                Modifica los campos que desees actualizar
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            
-                            <form onSubmit={submit} className="space-y-6">
-                                
-                                {/* Campo Nombre */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Nombre Completo</Label>
-                                    <Input 
-                                        id="name" 
-                                        type="text" 
-                                        placeholder="Fernando Tello" 
-                                        value={data.name} 
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        className={errors.name ? 'border-red-500' : ''}
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                    )}
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid gap-6 md:grid-cols-2">
+                                    {/* Nombre */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">
+                                            Nombre Completo <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            placeholder="Ej: Juan Pérez"
+                                            required
+                                        />
+                                        {errors.name && (
+                                            <p className="text-sm text-destructive">{errors.name}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Username */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">
+                                            Username <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="username"
+                                            value={data.username}
+                                            onChange={(e) => setData('username', e.target.value)}
+                                            placeholder="Ej: juan_perez"
+                                            required
+                                        />
+                                        {errors.username && (
+                                            <p className="text-sm text-destructive">{errors.username}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Email */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">
+                                            Email <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder="Ej: juan@example.com"
+                                            required
+                                        />
+                                        {errors.email && (
+                                            <p className="text-sm text-destructive">{errors.email}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Teléfono */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="telefono">Teléfono</Label>
+                                        <Input
+                                            id="telefono"
+                                            value={data.telefono}
+                                            onChange={(e) => setData('telefono', e.target.value)}
+                                            placeholder="Ej: 555-1234"
+                                        />
+                                        {errors.telefono && (
+                                            <p className="text-sm text-destructive">{errors.telefono}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Edad */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edad">Edad</Label>
+                                        <Input
+                                            id="edad"
+                                            type="number"
+                                            min="1"
+                                            max="120"
+                                            value={data.edad}
+                                            onChange={(e) => setData('edad', e.target.value)}
+                                            placeholder="Ej: 25"
+                                        />
+                                        {errors.edad && (
+                                            <p className="text-sm text-destructive">{errors.edad}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Sexo */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="sexo">Sexo</Label>
+                                        <Select value={data.sexo} onValueChange={(value) => setData('sexo', value)}>
+                                            <SelectTrigger id="sexo">
+                                                <SelectValue placeholder="Seleccionar sexo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="M">Masculino</SelectItem>
+                                                <SelectItem value="F">Femenino</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.sexo && (
+                                            <p className="text-sm text-destructive">{errors.sexo}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Tipo Nacionalidad */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tipo_nacionalidad">
+                                            Tipo de Nacionalidad <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.tipo_nacionalidad}
+                                            onValueChange={(value) => setData('tipo_nacionalidad', value)}
+                                        >
+                                            <SelectTrigger id="tipo_nacionalidad">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="nacional">Nacional</SelectItem>
+                                                <SelectItem value="extranjero">Extranjero</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.tipo_nacionalidad && (
+                                            <p className="text-sm text-destructive">{errors.tipo_nacionalidad}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Rol */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="role">
+                                            Rol <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.role}
+                                            onValueChange={(value) => setData('role', value)}
+                                        >
+                                            <SelectTrigger id="role">
+                                                <SelectValue placeholder="Seleccionar rol" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="administrador">Administrador</SelectItem>
+                                                <SelectItem value="cliente">Cliente</SelectItem>
+                                                <SelectItem value="recepcionista">Recepcionista</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {/* @ts-ignore */}
+                                        {errors.role && (
+                                            /* @ts-ignore */
+                                            <p className="text-sm text-destructive">{errors.role}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Estado de verificación de email */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email_verified">Estado de Verificación</Label>
+                                        <Select
+                                            value={data.email_verified_at ? 'verified' : 'unverified'}
+                                            onValueChange={(value) => setData('email_verified_at', value === 'verified')}
+                                        >
+                                            <SelectTrigger id="email_verified">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="verified">Email Verificado</SelectItem>
+                                                <SelectItem value="unverified">Email No Verificado</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
 
-                                {/* Campo Email */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Correo Electrónico</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email" 
-                                        placeholder="usuario@ejemplo.com" 
-                                        value={data.email} 
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        className={errors.email ? 'border-red-500' : ''}
-                                    />
-                                    {errors.email && (
-                                        <p className="text-sm text-red-600">{errors.email}</p>
-                                    )}
-                                </div>
-
-                                {/* Separador */}
-                                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                                        Cambiar Contraseña (Opcional)
-                                    </h4>
-                                </div>
-
-                                {/* Campo Contraseña */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Nueva Contraseña</Label>
-                                    <Input 
-                                        id="password" 
-                                        type="password" 
-                                        placeholder="Dejar vacío para no cambiar" 
-                                        value={data.password} 
-                                        onChange={(e) => setData('password', e.target.value)}
-                                        className={errors.password ? 'border-red-500' : ''}
-                                    />
-                                    {errors.password && (
-                                        <p className="text-sm text-red-600">{errors.password}</p>
-                                    )}
-                                </div>
-
-                                {/* Campo Confirmar Contraseña */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="password_confirmation">Confirmar Nueva Contraseña</Label>
-                                    <Input 
-                                        id="password_confirmation" 
-                                        type="password" 
-                                        placeholder="Confirmar contraseña" 
-                                        value={data.password_confirmation} 
-                                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                                        disabled={!data.password}
-                                    />
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Solo completar si deseas cambiar la contraseña
-                                    </p>
-                                </div>
-
-                                {/* Botones de Acción */}
-                                <div className="flex justify-end gap-4 pt-4">
-                                    <Button 
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleCancel}
-                                        disabled={processing}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button 
-                                        disabled={processing || !isDirty} 
-                                        type="submit"
-                                    >
-                                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Actualizar Usuario
+                                <div className="flex justify-end gap-4">
+                                    <Link href="/usuarios">
+                                        <Button type="button" variant="outline">
+                                            Cancelar
+                                        </Button>
+                                    </Link>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Actualizando...' : 'Actualizar Usuario'}
                                     </Button>
                                 </div>
                             </form>
-
                         </CardContent>
                     </Card>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayout >
     );
 }
