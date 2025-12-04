@@ -13,10 +13,14 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon } from 'lucide-react';
+//import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
 import configuracion from '@/routes/configuracion';
+import { route } from 'ziggy-js';
+import servicios from '@/routes/servicios';
+import categorias from '@/routes/categorias';
 
 
 const mainNavItems: NavItem[] = [
@@ -29,6 +33,17 @@ const mainNavItems: NavItem[] = [
         title: 'Usuarios',
         href: usuarios.index(),
         icon: UserIcon,
+    },
+    {
+        title: 'Categorías',
+        href: categorias.index(),
+        icon: Tags,
+    },
+    {
+        title: 'Servicios',
+        href: servicios.index(),
+        icon: NfcIcon,
+        
     },
     {
         title: 'Configuracion',

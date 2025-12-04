@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ServicioController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -34,6 +36,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('configuracion')->name('configuracion.')->group(function(){
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
+    });
+
+    Route::prefix('categorias')->name('categorias.')->group(function(){
+        Route::get('/', [CategoriaController::class, 'index'])->name('index');
+        Route::get('/create', [CategoriaController::class, 'create'])->name('create');
+        Route::post('/', [CategoriaController::class, 'store'])->name('store');
+        Route::get('/{categoria}', [CategoriaController::class, 'show'])->name('show');
+        Route::get('/{categoria}/edit', [CategoriaController::class, 'edit'])->name('edit');
+        Route::put('/{categoria}', [CategoriaController::class, 'update'])->name('update');
+    });
+    Route::prefix('servicios')->name('servicios.')->group(function(){
+        Route::get('/', [ServicioController::class, 'index'])->name('index');
+        Route::get('/create', [ServicioController::class, 'create'])->name('create');
+        Route::post('/', [ServicioController::class, 'store'])->name('store');
+        Route::get('/{servicio}', [ServicioController::class, 'show'])->name('show');
+        Route::get('/{servicio}/edit', [ServicioController::class, 'edit'])->name('edit');
+        Route::put('/{servicio}', [ServicioController::class, 'update'])->name('update');
     });
 });
 

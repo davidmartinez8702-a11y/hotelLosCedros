@@ -12,7 +12,7 @@ import {
 import { DataTable, Column, PaginationData } from '@/components/shared/DataTable';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { SearchFilter, FilterOption } from '@/components/shared/SearchFilter';
+import { SearchFilter } from '@/components/shared/SearchFilter';
 import { Plus, Eye } from 'lucide-react';
 import { route } from 'ziggy-js';
 
@@ -33,6 +33,11 @@ interface User {
 
 // Datos estáticos de ejemplo
 // Eliminamos STATIC_USERS ya que usaremos datos del backend
+
+interface FilterOption {
+    value: string;
+    label: string;
+}
 
 const FILTER_OPTIONS: FilterOption[] = [
     { value: 'username', label: 'Username' },
@@ -186,16 +191,24 @@ export default function UsuariosPage({ usuariosPaginados, filters = {} }: Props)
                         </Link>
                     </div>
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <SearchFilter
-                            searchValue={searchValue}
-                            onSearchChange={setSearchValue}
-                            filterValue={filterBy}
-                            onFilterChange={(value) => setFilterBy(value as 'username' | 'email')}
-                            filterOptions={FILTER_OPTIONS}
-                            searchPlaceholder="Buscar..."
-                            filterPlaceholder="Buscar por..."
-                        />
+
+                    <SearchFilter
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        searchPlaceholder="Buscar..."
+                    >
+                        <Select value={filterBy} onValueChange={(value) => setFilterBy(value as 'username' | 'email')}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Buscar por..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {FILTER_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
                         <Select value={roleFilter} onValueChange={handleRoleChange}>
                             <SelectTrigger className="w-full sm:w-[200px]">
@@ -209,7 +222,7 @@ export default function UsuariosPage({ usuariosPaginados, filters = {} }: Props)
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
+                    </SearchFilter>
 
                     <DataTable
                         columns={columns}
