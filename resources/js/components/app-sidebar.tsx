@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -21,6 +21,7 @@ import configuracion from '@/routes/configuracion';
 import { route } from 'ziggy-js';
 import servicios from '@/routes/servicios';
 import categorias from '@/routes/categorias';
+import platillos from '@/routes/platillos';
 
 
 const mainNavItems: NavItem[] = [
@@ -43,6 +44,12 @@ const mainNavItems: NavItem[] = [
         title: 'Servicios',
         href: servicios.index(),
         icon: NfcIcon,
+        
+    },
+    {
+        title: 'Platillos',
+        href: platillos.index(),
+        icon: UtensilsCrossed,
         
     },
     {

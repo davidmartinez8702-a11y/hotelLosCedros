@@ -5,7 +5,10 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 
-const Login = ({ email: prefilledEmail }: { email?: string }) => {
+interface LoginProps{
+  email?: string;
+}
+const Login = ({ email: prefilledEmail }: LoginProps) => {
   const { data, setData, post, processing, errors } = useForm({
     email: prefilledEmail || "", 
     password: "",

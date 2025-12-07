@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 35 25% 97%;
+    --foreground: 30 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 30 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 15% 15%;
+
+    --primary: 30 30% 45%;
+    --primary-foreground: 35 25% 97%;
+
+    --secondary: 35 30% 88%;
+    --secondary-foreground: 30 15% 15%;
+
+    --muted: 35 20% 92%;
+    --muted-foreground: 30 10% 45%;
+
+    --accent: 40 60% 55%;
+    --accent-foreground: 30 15% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 35 25% 97%;
+
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 30 30% 45%;
+
+    --radius: 0.5rem;
+    
+    /* Hotel-specific design tokens */
+    --hotel-gold: 40 60% 55%;
+    --hotel-brown: 30 30% 45%;
+    --hotel-cream: 35 25% 97%;
+    --hotel-dark: 30 15% 15%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(30 30% 45% / 0.95), hsl(30 15% 15% / 0.85));
+    --gradient-section: linear-gradient(180deg, hsl(35 25% 97%), hsl(35 30% 90%));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 40px -10px hsl(30 30% 45% / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(30 30% 45% / 0.15);
+    
+    /* Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 40% 12%;
+    --foreground: 210 30% 96%;
+
+    --card: 220 35% 15%;
+    --card-foreground: 210 30% 96%;
+
+    --popover: 220 35% 15%;
+    --popover-foreground: 210 30% 96%;
+
+    --primary: 210 70% 50%;
+    --primary-foreground: 210 30% 96%;
+
+    --secondary: 220 30% 20%;
+    --secondary-foreground: 210 30% 96%;
+
+    --muted: 220 25% 22%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 210 80% 55%;
+    --accent-foreground: 220 40% 12%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 30% 96%;
+
+    --border: 220 30% 25%;
+    --input: 220 30% 25%;
+    --ring: 210 70% 50%;
+    
+    /* Hotel dark mode - navy blue theme */
+    --hotel-gold: 45 90% 60%;
+    --hotel-brown: 210 70% 50%;
+    --hotel-cream: 210 30% 96%;
+    --hotel-dark: 220 40% 12%;
+    
+    /* Dark mode gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(220 50% 15% / 0.95), hsl(220 40% 8% / 0.9));
+    --gradient-section: linear-gradient(180deg, hsl(220 40% 12%), hsl(220 35% 16%));
+    
+    /* Dark mode shadows */
+    --shadow-elegant: 0 10px 40px -10px hsl(210 70% 50% / 0.3);
+    --shadow-card: 0 4px 20px -4px hsl(210 70% 50% / 0.2);
+    
+    --sidebar-background: 220 35% 15%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-primary: 210 70% 50%;
+    --sidebar-primary-foreground: 210 30% 96%;
+    --sidebar-accent: 220 30% 20%;
+    --sidebar-accent-foreground: 210 30% 96%;
+    --sidebar-border: 220 30% 25%;
+    --sidebar-ring: 210 70% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

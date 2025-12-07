@@ -60,9 +60,6 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
-
-
-
 }
 
 :root {
@@ -99,12 +96,6 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
-
-  
-    --hotel-dark: 30 15% 15%; /* Fondo oscuro */
-    --hotel-brown: 30 30% 45%; /* Marrón intermedio */
-    --hotel-cream: 35 25% 97%; /* Texto crema */
-    
 }
 
 .dark {
@@ -140,12 +131,6 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
-
-
-    --hotel-dark: 220 40% 12%; /* Fondo oscuro */
-    --hotel-brown: 210 30% 45%; /* Marrón intermedio */
-    --hotel-cream: 210 30% 96%; /* Texto crema */
-
 }
 
 
@@ -202,12 +187,6 @@
     --sidebar-accent-foreground: oklch(0.25 0.05 60);
     --sidebar-border: oklch(0.8 0.02 90);
     --sidebar-ring: oklch(0.7 0.05 60);
-
-
-    --hotel-dark: 30 20% 40%; /* Fondo beige más oscuro */
-    --hotel-brown: 30 30% 50%; /* Marrón intermedio */
-    --hotel-cream: 30 15% 20%; /* Marrón oscuro más suave */
-  
 }
 
 .marino{

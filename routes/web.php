@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServicioController;
 use App\Models\User;
@@ -73,6 +74,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{servicio}', [ServicioController::class, 'show'])->name('show');
         Route::get('/{servicio}/edit', [ServicioController::class, 'edit'])->name('edit');
         Route::put('/{servicio}', [ServicioController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('platillos')->name('platillos.')->group(function(){
+        Route::get('/', [PlatilloController::class, 'index'])->name('index');
+        Route::get('/create', [PlatilloController::class, 'create'])->name('create');
+        Route::post('/', [PlatilloController::class, 'store'])->name('store');
+        Route::get('/{platillo}', [PlatilloController::class, 'show'])->name('show');
+        Route::get('/{platillo}/edit', [PlatilloController::class, 'edit'])->name('edit');
+        Route::post('/{platillo}', [PlatilloController::class, 'update'])->name('update'); //post por que tiene imagen
     });
 });
 

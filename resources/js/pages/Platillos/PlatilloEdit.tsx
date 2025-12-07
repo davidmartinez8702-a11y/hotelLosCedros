@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,33 +18,64 @@ interface Categoria {
   nombre: string;
 }
 
-interface Props {
-  categorias: Categoria[];
+interface Platillo {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  ingredientes: string | null;
+  image_url: string | null;
+  precio: number;
+  estado: "disponible" | "no disponible";
+  categoria_id: number;
 }
 
-export default function PlatillosCreatePage({ categorias }: Props) {
+interface Props {
+  platillo: Platillo;
+  categorias: Categoria[];
+}
+// function getImageUrl(imageUrl: string | null): string {
+//     if (!imageUrl) {
+//       // Si no hay imagen, devuelve una imagen por defecto
+//       return PlatilloDefault;
+//     }
+  
+//     if (imageUrl.startsWith("http") || imageUrl.startsWith("https")) {
+//       // Si la URL ya es absoluta, devuélvela tal cual
+//       return imageUrl;
+//     }
+  
+//     // Si la URL es relativa, asume que está en el storage de Laravel
+//     return `/storage/${imageUrl}`;
+// }
+export default function PlatilloEdit({ platillo, categorias }: Props) {
   const { data, setData, post, processing, errors } = useForm({
-    nombre: "",
-    categoria_id: categorias.length > 0 ? categorias[0].id : null,
-    descripcion: "",
-    ingredientes: "",
-    precio: 0,
-    estado: "disponible",
+    nombre: platillo.nombre,
+    categoria_id: platillo.categoria_id,
+    descripcion: platillo.descripcion || "",
+    ingredientes: platillo.ingredientes || "",
+    precio: platillo.precio || 0,
+    estado: platillo.estado || 'disponible',
     imagen: null as File | null,
+    //imagen:PlatilloDefault
   });
-
-  const [previewImage, setPreviewImage] = useState<string | null>(PlatilloDefault);
+  const platilloImageUrl = platillo.image_url;
+  console.log(platilloImageUrl);
+  //const platilloImageUrl =  PlatilloDefault;
+  const [previewImage, setPreviewImage] = useState<string | null>(platilloImageUrl);
 
   const handleImageChange = (file: File) => {
-    setData("imagen", file);
-    setPreviewImage(URL.createObjectURL(file));
+    setData((prevData) => ({
+        ...prevData, // Mantén los datos existentes
+        imagen: file, // Actualiza solo el campo "imagen"
+      }));
+      setPreviewImage(URL.createObjectURL(file)); // Actualiza la previsualización
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(route("platillos.store"), {
+    post(route("platillos.update", platillo.id), {
       preserveScroll: true,
-      onSuccess: () => console.log("Platillo creado"),
+      onSuccess: () => console.log("Platillo actualizado"),
     });
   };
 
@@ -52,20 +83,32 @@ export default function PlatillosCreatePage({ categorias }: Props) {
     <AppLayout
       breadcrumbs={[
         { title: "Platillos", href: route("platillos.index") },
-        { title: "Crear", href: route("platillos.create") },
+        { title: platillo.nombre, href: route("platillos.show", platillo.id) },
+        { title: "Editar", href: route("platillos.edit", platillo.id) },
       ]}
     >
-      <Head title="Crear Platillo" />
-
+      <Head title={`Editar Platillo: ${platillo.nombre}`} />
+      
       <div className="py-8 lg:py-12">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <EntityHeader title="Crear Platillo" subtitle="Agrega un nuevo platillo al menú" />
-          </div>
+            <div className="flex items-center justify-between">
+                <EntityHeader
+                title={`Edicion del Platillo`}
+                subtitle={`${platillo.nombre}`}
+                />
+                
+            </div>
 
           <Separator />
           <form onSubmit={handleSubmit}>
             <Card>
+                {/* <CardHeader>
+                    <CardTitle>Información del Platillo</CardTitle>
+                    <CardDescription>
+                        Edita los Datos del Platillo Seleccionado.
+                    </CardDescription>
+                </CardHeader> */}
+                
               <CardContent className="flex flex-col md:flex-row gap-6 mt-10">
                 {/* Imagen */}
                 <div className="md:w-1/2 flex justify-center items-center">
@@ -90,7 +133,7 @@ export default function PlatillosCreatePage({ categorias }: Props) {
                   <div>
                     <Label htmlFor="categoria">Categoría</Label>
                     <Select
-                      value={data.categoria_id?.toString() || ""}
+                      value={data.categoria_id.toString()}
                       onValueChange={(value) => setData("categoria_id", parseInt(value))}
                     >
                       <SelectTrigger>
@@ -144,7 +187,7 @@ export default function PlatillosCreatePage({ categorias }: Props) {
 
                   {/* Estado */}
                   <div>
-                    <Label htmlFor="estado">Estado</Label>
+                    <Label htmlFor="estado">Estado {data.estado}</Label>
                     <Select
                       value={data.estado}
                       onValueChange={(value) => setData("estado", value as "disponible" | "no disponible")}
@@ -161,17 +204,20 @@ export default function PlatillosCreatePage({ categorias }: Props) {
                   </div>
                 </div>
               </CardContent>
-              <div className="flex justify-end mb-4 mr-4">
-                <Button type="submit" disabled={processing}>
-                  Crear Platillo
-                </Button>
-              </div>
+                <div className="flex justify-end mb-4 mr-4">
+                    <Button type="submit" disabled={processing}>
+                        Guardar Cambios
+                    </Button>
+                </div>
             </Card>
 
             <Separator />
+
+          
           </form>
         </div>
       </div>
     </AppLayout>
   );
 }
+

@@ -1,140 +1,201 @@
 import React, { useState, useEffect } from 'react';
-// Assuming you might use an icon library like react-icons or a custom SVG component
-// import { FaEye, FaPencilAlt } from 'react-icons/fa'; // Example for react-icons
+import { Head, Link, router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { DataTable, Column, PaginationData } from '@/components/shared/DataTable';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { SearchFilter } from '@/components/shared/SearchFilter';
+import { Plus, Eye, Pencil } from 'lucide-react';
+import { route } from 'ziggy-js';
 
+// --- Interfaces de Tipos ---
 interface Categoria {
-  id: number;
-  nombre: string;
+    nombre: string;
 }
 
 interface Platillo {
-  id: number;
-  nombre: string;
-  precio: number;
-  estado: boolean; // Assuming true for activo, false for inactivo
-  categoria_id: number;
+    id: number;
+    nombre: string;
+    precio: number;
+    estado: 'activo' | 'inactivo';
+    categoria: Categoria;
 }
 
-const PlatillosPage: React.FC = () => {
-  const [platillos, setPlatillos] = useState<Platillo[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Simulate fetching data from an API
-    const fetchData = async () => {
-      try {
-        // Replace with actual API calls
-        const mockCategorias: Categoria[] = [
-          { id: 1, nombre: 'Entradas' },
-          { id: 2, nombre: 'Platos Fuertes' },
-          { id: 3, nombre: 'Postres' },
-          { id: 4, nombre: 'Bebidas' },
-        ];
-        const mockPlatillos: Platillo[] = [
-          { id: 1, nombre: 'Ensalada César', precio: 12.50, estado: true, categoria_id: 1 },
-          { id: 2, nombre: 'Lomo Saltado', precio: 25.00, estado: true, categoria_id: 2 },
-          { id: 3, nombre: 'Tiramisú', precio: 8.00, estado: false, categoria_id: 3 },
-          { id: 4, nombre: 'Jugo de Naranja', precio: 5.50, estado: true, categoria_id: 4 },
-          { id: 5, nombre: 'Ceviche Mixto', precio: 22.00, estado: true, categoria_id: 1 },
-        ];
-
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        setCategorias(mockCategorias);
-        setPlatillos(mockPlatillos);
-      } catch (err) {
-        setError('Error al cargar los datos.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+interface Props {
+    platillos: {
+        data: Platillo[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
     };
+    filters?: {
+        search?: string;
+        estado?: string;
+    };
+}
 
-    fetchData();
-  }, []);
+// Breadcrumbs
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: route('dashboard') },
+    { title: 'Platillos', href: route('platillos.index') },
+];
 
-  const getCategoryName = (categoria_id: number): string => {
-    const categoria = categorias.find(cat => cat.id === categoria_id);
-    return categoria ? categoria.nombre : 'Desconocida';
-  };
+// Opciones de filtro de estado
+const ESTADO_OPTIONS = [
+    { value: 'todos', label: 'Todos los estados' },
+    { value: 'disponible', label: 'Disponible' },
+    { value: 'no disponible', label: 'No Disponible' },
+];
 
-  const handleShow = (id: number) => {
-    console.log(`Mostrar platillo con ID: ${id}`);
-    // Implement navigation or modal display for platillo details
-  };
-
-  const handleEdit = (id: number) => {
-    console.log(`Editar platillo con ID: ${id}`);
-    // Implement navigation to edit form
-  };
-
-  if (loading) {
-    return <div className="p-4">Cargando platillos...</div>;
-  }
-
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
-  }
-
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestión de Platillos</h1>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b text-left">ID</th>
-              <th className="py-2 px-4 border-b text-left">Nombre</th>
-              <th className="py-2 px-4 border-b text-left">Precio</th>
-              <th className="py-2 px-4 border-b text-left">Estado</th>
-              <th className="py-2 px-4 border-b text-left">Categoría</th>
-              <th className="py-2 px-4 border-b text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {platillos.map(platillo => (
-              <tr key={platillo.id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 border-b">{platillo.id}</td>
-                <td className="py-2 px-4 border-b">{platillo.nombre}</td>
-                <td className="py-2 px-4 border-b">${platillo.precio.toFixed(2)}</td>
-                <td className="py-2 px-4 border-b">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    platillo.estado ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {platillo.estado ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-                <td className="py-2 px-4 border-b">{getCategoryName(platillo.categoria_id)}</td>
-                <td className="py-2 px-4 border-b">
-                  <button
-                    onClick={() => handleShow(platillo.id)}
-                    className="text-blue-600 hover:text-blue-900 mr-2"
-                    title="Ver Platillo"
-                  >
-                    {/* Using a simple SVG for eye icon, replace with FaEye if using react-icons */}
-                    <svg className="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    {/* <FaEye /> */}
-                  </button>
-                  <button
-                    onClick={() => handleEdit(platillo.id)}
-                    className="text-yellow-600 hover:text-yellow-900"
-                    title="Editar Platillo"
-                  >
-                    {/* Using a simple SVG for pencil icon, replace with FaPencilAlt if using react-icons */}
-                    <svg className="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    {/* <FaPencilAlt /> */}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+// Formatear precio como moneda
+const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('es-BO', {
+        style: 'currency',
+        currency: 'BOB',
+        minimumFractionDigits: 2,
+    }).format(amount);
 };
 
-export default PlatillosPage;
+export default function PlatillosPage({ platillos, filters = {} }: Props) {
+    const [searchValue, setSearchValue] = useState(filters.search || '');
+    const [estadoFilter, setEstadoFilter] = useState(filters.estado || 'todos');
+
+    const handleSearch = (search: string, estado: string) => {
+        router.get(
+            route('platillos.index'),
+            { search, estado },
+            { preserveState: true, replace: true }
+        );
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchValue !== (filters.search || '')) {
+                handleSearch(searchValue, estadoFilter);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchValue]);
+
+    const handleEstadoChange = (estado: string) => {
+        setEstadoFilter(estado);
+        handleSearch(searchValue, estado);
+    };
+
+    const columns: Column<Platillo>[] = [
+        { key: 'id', label: 'ID', className: 'w-[80px]' },
+        { key: 'nombre', label: 'Nombre del Platillo', className: 'min-w-[200px]' },
+        {
+            key: 'categoria',
+            label: 'Categoría',
+            render: (platillo) => <span>{platillo.categoria.nombre}</span>,
+        },
+        {
+            key: 'precio',
+            label: 'Precio',
+            render: (platillo) => (
+                <span className="font-medium text-green-600">
+                    {formatCurrency(platillo.precio)}
+                </span>
+            ),
+        },
+        {
+            key: 'estado',
+            label: 'Estado',
+            render: (platillo) => (
+                <Badge variant={platillo.estado === 'activo' ? 'default' : 'secondary'}>
+                    {platillo.estado.charAt(0).toUpperCase() + platillo.estado.slice(1)}
+                </Badge>
+            ),
+        },
+        {
+            key: 'actions',
+            label: 'Acciones',
+            className: 'w-[100px] text-right',
+            render: (platillo) => (
+                <div className="flex gap-2 justify-end">
+                    <Link href={route('platillos.show', platillo.id)}>
+                        <Button variant="ghost" size="sm" title="Ver Detalle">
+                            <Eye className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <Link href={route('platillos.edit', platillo.id)}>
+                        <Button variant="ghost" size="sm" title="Editar">
+                            <Pencil className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                </div>
+            ),
+        },
+    ];
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Gestión de Platillos" />
+
+            <div className="py-8 lg:py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Platillos</h1>
+                            <p className="text-muted-foreground">
+                                Administra los platillos disponibles en el menú.
+                            </p>
+                        </div>
+                        <Link href={route('platillos.create')}>
+                            <Button className="w-full sm:w-auto">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Nuevo Platillo
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <SearchFilter
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        searchPlaceholder="Buscar platillo por nombre..."
+                    >
+                        <Select value={estadoFilter} onValueChange={handleEstadoChange}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Filtrar por estado" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ESTADO_OPTIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </SearchFilter>
+
+                    <DataTable
+                        columns={columns}
+                        data={platillos.data}
+                        pagination={platillos}
+                        onPageChange={(page) => {
+                            router.get(
+                                route('platillos.index'),
+                                { page, search: searchValue, estado: estadoFilter },
+                                { preserveState: true }
+                            );
+                        }}
+                        emptyMessage="No se encontraron platillos"
+                    />
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
