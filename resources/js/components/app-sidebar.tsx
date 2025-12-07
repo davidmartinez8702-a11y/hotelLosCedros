@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -22,6 +22,7 @@ import { route } from 'ziggy-js';
 import servicios from '@/routes/servicios';
 import categorias from '@/routes/categorias';
 import platillos from '@/routes/platillos';
+import tipoHabitacion from '@/routes/tipo-habitacion';
 
 
 const mainNavItems: NavItem[] = [
@@ -51,6 +52,12 @@ const mainNavItems: NavItem[] = [
         href: platillos.index(),
         icon: UtensilsCrossed,
         
+    },
+    {
+        title:'Tipo De Habitacion',
+        //href: route('tipo-habitacion.index'),
+        href:tipoHabitacion.index(),
+        icon:HotelIcon,
     },
     {
         title: 'Configuracion',

@@ -8,11 +8,13 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\TipoHabitacionController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use Ramsey\Uuid\Type\Time;
 
 Route::get('/', function () {
     // return Inertia::render('welcome', [
@@ -79,6 +81,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{servicio}/imagenes', [ServicioController::class, 'subirImagen'])->name('imagenes.subir');
         Route::delete('/imagenes/{imagen}', [ServicioController::class, 'eliminarImagen'])->name('imagenes.eliminar');
     });
+
+
+    Route::prefix('tipoHabitacion')->name('tipo-habitacion.')->group(function(){
+        Route::get('/', [TipoHabitacionController::class, 'index'])->name('index');
+        Route::get('/create', [TipoHabitacionController::class, 'create'])->name('create');
+        Route::post('/', [TipoHabitacionController::class, 'store'])->name('store');
+        Route::get('/{tipoHabitacion}', [TipoHabitacionController::class, 'show'])->name('show');
+        Route::get('/{tipoHabitacion}/edit', [TipoHabitacionController::class, 'edit'])->name('edit');
+        Route::put('/{tipoHabitacion}', [TipoHabitacionController::class, 'update'])->name('update');
+
+        Route::get('/{tipoHabitacion}/galeria', [TipoHabitacionController::class, 'galeria'])->name('galeria');
+        // Route::post('/{tipoHabitacion}/imagenes', [ServicioController::class, 'subirImagen'])->name('imagenes.subir');
+        // Route::delete('/imagenes/{imagen}', [ServicioController::class, 'eliminarImagen'])->name('imagenes.eliminar');
+        Route::get('/{tipoHabitacion}/galeria', [TipoHabitacionController::class, 'galeria'])->name('galeria');
+        Route::post('/{tipoHabitacion}/imagenes', [TipoHabitacionController::class, 'subirImagen'])->name('imagenes.subir');
+        Route::delete('/imagenes/{imagen}', [TipoHabitacionController::class, 'eliminarImagen'])->name('imagenes.eliminar');
+    });
+
+
 
     Route::prefix('platillos')->name('platillos.')->group(function(){
         Route::get('/', [PlatilloController::class, 'index'])->name('index');
