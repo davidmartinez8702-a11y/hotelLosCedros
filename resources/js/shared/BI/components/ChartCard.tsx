@@ -6,7 +6,7 @@ import { ChartFilterOption } from "../mocks/types";
 
 interface ChartCardProps {
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
   filterOptions?: ChartFilterOption[];
   filterValue?: string;

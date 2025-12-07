@@ -111,7 +111,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('/BI', function () {
-        return Inertia::render('BI/BIHotel');
+        return Inertia::render('BI/BIHotelGenerico');
     })->name('bi.index');
 });
 
