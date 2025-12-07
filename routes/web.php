@@ -1,20 +1,40 @@
 <?php
 
+use App\CustomLoginResponse;
+use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServicioController;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    // return Inertia::render('welcome', [
+    //     'canRegister' => Features::enabled(Features::registration()),
+    // ]);
+    return Inertia::render('Landing/LandingPage');
 })->name('home');
+
+Route::get('/login', function (Request $request) {
+    return Inertia::render('auth/Login',[
+        'email' => $request->query('email')
+    ]);
+})->name('login');
+
+// Ruta para el registro (opcional)
+Route::get('/register', function () {
+    return Inertia::render('auth/Register');
+})->name('register');
+
+//backend de login y register
+Route::post('/custom-login', [CustomAuthController::class, 'login'])->name('custom.login');
+Route::post('/custom-register', [CustomAuthController::class, 'register'])->name('custom.register');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
