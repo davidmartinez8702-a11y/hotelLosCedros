@@ -1,5 +1,5 @@
 import React from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,31 +10,40 @@ import { Textarea } from "@/shared/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { route } from "ziggy-js";
 import EntityHeader from "@/shared/components/EntityHeader";
-import { ArrowLeft } from "lucide-react";
 
 interface Categoria {
   id: number;
   nombre: string;
 }
 
+interface Servicio {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  precio: number;
+  estado: "activo" | "inactivo";
+  categoria_id: number;
+}
+
 interface Props {
+  servicio: Servicio;
   categorias: Categoria[];
 }
 
-export default function ServiciosCreatePage({ categorias }: Props) {
-  const { data, setData, post, processing, errors } = useForm({
-    nombre: "",
-    categoria_id: "",
-    descripcion: "",
-    precio: 0,
-    estado: "activo",
+export default function ServicioEdit({ servicio, categorias }: Props) {
+  const { data, setData, put, processing, errors } = useForm({
+    nombre: servicio.nombre,
+    categoria_id: servicio.categoria_id,
+    descripcion: servicio.descripcion || "",
+    precio: servicio.precio || 0,
+    estado: servicio.estado || "activo",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(route("servicios.store"), {
+    put(route("servicios.update", servicio.id), {
       preserveScroll: true,
-      onSuccess: () => console.log("Servicio creado"),
+      onSuccess: () => console.log("Servicio actualizado"),
     });
   };
 
@@ -42,26 +51,20 @@ export default function ServiciosCreatePage({ categorias }: Props) {
     <AppLayout
       breadcrumbs={[
         { title: "Servicios", href: route("servicios.index") },
-        { title: "Crear", href: route("servicios.create") },
+        { title: servicio.nombre, href: route("servicios.show", servicio.id) },
+        { title: "Editar", href: route("servicios.edit", servicio.id) },
       ]}
     >
-      <Head title="Crear Nuevo Servicio" />
+      <Head title={`Editar Servicio: ${servicio.nombre}`} />
 
       <div className="py-8 lg:py-12">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
           {/* Encabezado */}
-          <div className="flex items-center gap-4">
-            <Link href={route("servicios.index")}>
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Crear Nuevo Servicio</h1>
-              <p className="text-muted-foreground">
-                Completa el formulario para registrar un nuevo servicio.
-              </p>
-            </div>
+          <div className="flex items-center justify-between">
+            <EntityHeader
+              title={`Editar Servicio`}
+              subtitle={`Modifica los datos del servicio "${servicio.nombre}"`}
+            />
           </div>
 
           <Separator />
@@ -89,8 +92,8 @@ export default function ServiciosCreatePage({ categorias }: Props) {
                 <div>
                   <Label htmlFor="categoria">Categoría</Label>
                   <Select
-                    value={data.categoria_id}
-                    onValueChange={(value) => setData("categoria_id", value)}
+                    value={data.categoria_id.toString()}
+                    onValueChange={(value) => setData("categoria_id", parseInt(value))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona una categoría" />
@@ -151,7 +154,7 @@ export default function ServiciosCreatePage({ categorias }: Props) {
               </CardContent>
               <div className="flex justify-end mb-4 mr-4">
                 <Button type="submit" disabled={processing}>
-                  Crear Servicio
+                  Guardar Cambios
                 </Button>
               </div>
             </Card>

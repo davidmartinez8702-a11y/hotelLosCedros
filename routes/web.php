@@ -74,6 +74,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{servicio}', [ServicioController::class, 'show'])->name('show');
         Route::get('/{servicio}/edit', [ServicioController::class, 'edit'])->name('edit');
         Route::put('/{servicio}', [ServicioController::class, 'update'])->name('update');
+
+        Route::get('/{servicio}/galeria', [ServicioController::class, 'galeria'])->name('galeria');
+        Route::post('/{servicio}/imagenes', [ServicioController::class, 'subirImagen'])->name('imagenes.subir');
+        Route::delete('/imagenes/{imagen}', [ServicioController::class, 'eliminarImagen'])->name('imagenes.eliminar');
     });
 
     Route::prefix('platillos')->name('platillos.')->group(function(){
@@ -84,6 +88,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{platillo}/edit', [PlatilloController::class, 'edit'])->name('edit');
         Route::post('/{platillo}', [PlatilloController::class, 'update'])->name('update'); //post por que tiene imagen
     });
+
+    
 });
 
 //rutas agrupadas

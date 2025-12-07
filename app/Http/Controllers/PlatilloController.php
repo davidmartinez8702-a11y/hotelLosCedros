@@ -111,8 +111,8 @@ class PlatilloController extends Controller
                 'precio' => $platillo->precio,
                 'estado' => $platillo->estado,
                 'categoria' => $platillo->categoria->nombre,
-                // 'created_at' => $platillo->created_at->format('d/m/Y H:i'),
-                // 'updated_at' => $platillo->updated_at->format('d/m/Y H:i'),
+                'created_at' => $platillo->created_at->format('d/m/Y H:i'),
+                'updated_at' => $platillo->updated_at->format('d/m/Y H:i'),
             ],
         ]);
     }

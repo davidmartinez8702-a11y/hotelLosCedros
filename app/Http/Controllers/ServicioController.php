@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicio;
 use App\Models\Categoria;
+use App\Models\Imagen;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ServicioController extends Controller
@@ -45,11 +47,10 @@ class ServicioController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-     public function create()
+    public function create()
     {
-        // Se asume que solo quieres mostrar categorías activas para crear un servicio
-        $categorias = Categoria::where('estado', 'activo')->get(['id', 'nombre']);
-        return Inertia::render('Servicios/ServiciosCreatePage', [
+        $categorias = Categoria::all(['id', 'nombre']);
+        return inertia('Servicios/ServiciosCreatePage', [
             'categorias' => $categorias,
         ]);
     }
@@ -79,10 +80,20 @@ class ServicioController extends Controller
     public function show(Servicio $servicio)
     {
         //
-        $servicio->load('categoria');
+        $servicio = Servicio::with('categoria')->findOrFail($servicio->id);
 
-        return Inertia::render('Servicios/ServiciosShowPage', [
-            'servicio' => $servicio
+        // Retornar la vista con los datos del platillo
+        return Inertia::render('Servicios/ServicioShow', [
+            'servicio' => [
+                'id' => $servicio->id,
+                'nombre' => $servicio->nombre,
+                'descripcion' => $servicio->descripcion,
+                'precio' => $servicio->precio,
+                'estado' => $servicio->estado,
+                'categoria' => $servicio->categoria,
+                'created_at' => $servicio->created_at->format('d/m/Y H:i'),
+                'updated_at' => $servicio->updated_at->format('d/m/Y H:i'),
+            ],
         ]);
     }
 
@@ -94,7 +105,7 @@ class ServicioController extends Controller
         //
         $categorias = Categoria::where('estado', 'activo')->get(['id', 'nombre']);
 
-        return Inertia::render('Servicios/ServiciosUpdatePage', [
+        return Inertia::render('Servicios/ServicioEdit', [
             'servicio' => $servicio,
             'categorias' => $categorias,
         ]);
@@ -106,17 +117,16 @@ class ServicioController extends Controller
     public function update(Request $request, Servicio $servicio)
     {
         $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
             'categoria_id' => 'required|exists:categorias,id',
-            'nombre' => 'required|string|max:255|unique:servicios,nombre,' . $servicio->id,
-            'descripcion' => 'required|string',
-            'precio' => 'required|numeric|min:0.01',
+            'descripcion' => 'nullable|string',
+            'precio' => 'required|numeric|min:0',
             'estado' => 'required|in:activo,inactivo',
         ]);
 
         $servicio->update($validated);
 
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio actualizado exitosamente.');
+        return redirect()->route('servicios.index')->with('success', 'Servicio actualizado correctamente.');
     }
 
     /**
@@ -125,5 +135,54 @@ class ServicioController extends Controller
     public function destroy(Servicio $servicio)
     {
         //
+    }
+
+    public function galeria(Servicio $servicio)
+    {
+        // Cargar las imágenes relacionadas con el servicio
+        $imagenes = $servicio->imagenes()->get(['id', 'url_image','created_at'])->map(function ($imagen) {
+            return [
+                'id' => $imagen->id,
+                'url' => $imagen->url, // Usa el accesor para obtener la URL completa
+                'created_at' => $imagen->created_at->format('d/m/Y H:i'),
+            ];
+        });
+
+        return inertia('Servicios/ServicioGaleria', [
+            'servicioId' => $servicio->id,
+            'servicioNombre' => $servicio->nombre,
+            'imagenes' => $imagenes,
+        ]);
+    }
+
+
+    public function subirImagen(Request $request, Servicio $servicio)
+    {
+        // Validar la imagen
+        $request->validate([
+            'imagen' => 'required|image|max:2048', // Máximo 2MB
+        ]);
+
+        // Guardar la imagen en el almacenamiento público
+        $path = $request->file('imagen')->store('servicios', 'public');
+
+        // Crear el registro de la imagen asociada al servicio
+        $servicio->imagenes()->create([
+            'url_image' => $path,
+        ]);
+
+        return back()->with('success', 'Imagen subida correctamente.');
+    }
+
+
+    public function eliminarImagen(Imagen $imagen)
+    {
+        // Eliminar el archivo de almacenamiento
+        Storage::disk('public')->delete($imagen->url_image);
+
+        // Eliminar el registro de la base de datos
+        $imagen->delete();
+
+        return back()->with('success', 'Imagen eliminada correctamente.');
     }
 }
