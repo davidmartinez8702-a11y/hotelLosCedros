@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -58,6 +58,12 @@ const mainNavItems: NavItem[] = [
         //href: route('tipo-habitacion.index'),
         href:tipoHabitacion.index(),
         icon:HotelIcon,
+    },
+    {
+        title:'BI',
+        //href: route('tipo-habitacion.index'),
+        href:route('bi.index'),
+        icon:BoxIcon,
     },
     {
         title: 'Configuracion',

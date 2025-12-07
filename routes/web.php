@@ -110,7 +110,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{platillo}', [PlatilloController::class, 'update'])->name('update'); //post por que tiene imagen
     });
 
-    
+    Route::get('/BI', function () {
+        return Inertia::render('BI/BIHotel');
+    })->name('bi.index');
 });
 
 //rutas agrupadas
