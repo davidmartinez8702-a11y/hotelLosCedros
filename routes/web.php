@@ -10,6 +10,7 @@ use App\Http\Controllers\PlatilloController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\TipoHabitacionController;
+use App\Http\Controllers\PrediccionController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -167,3 +168,23 @@ Route::get('/api/bi/evolucion-servicios', [BIController::class, 'getEvolucionSer
 //     ]);
 
 require __DIR__ . '/settings.php';
+
+Route::middleware(['auth'])->group(function () {
+    // Vista principal
+    Route::get('/predicciones', [PrediccionController::class, 'index'])
+        ->name('predicciones.index');
+    
+    // Endpoints de predicción (GET con parámetro en URL)
+    Route::get('/predicciones/demanda/{dias}', [PrediccionController::class, 'predecirDemanda'])
+        ->name('predicciones.demanda');
+    
+    Route::get('/predicciones/ingresos/{dias}', [PrediccionController::class, 'predecirIngresos'])
+        ->name('predicciones.ingresos');
+    
+    Route::get('/predicciones/cancelaciones/{dias}', [PrediccionController::class, 'predecirCancelaciones'])
+        ->name('predicciones.cancelaciones');
+    
+    // Generar reporte PDF
+    Route::post('/predicciones/reporte', [PrediccionController::class, 'generarReporte'])
+        ->name('predicciones.reporte');
+});
