@@ -53,7 +53,10 @@ export function GenericBarChart({
                         tick={{ fontSize: 12, fill: "#6b7280" }}
                         axisLine={{ stroke: "#e5e7eb" }}
                     />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip
+                        content={<CustomTooltip />}
+                        cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                    />
                     <Legend
                         wrapperStyle={{ cursor: "pointer" }}
                         onClick={handleLegendClick}

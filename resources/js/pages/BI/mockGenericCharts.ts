@@ -154,3 +154,94 @@ export const comentariosData = [
     { categoria: "Regular", cantidad: 18, fill: "#fbbf24" },
     { categoria: "Malo", cantidad: 5, fill: "#ef4444" },
 ];
+
+// Data para Evolución Temporal de Servicios (gráfica de barras por servicio)
+// Gym
+export const evolucionGymData = [
+    { periodo: "Lun", cantidad: 8, ingresos: 2000 },
+    { periodo: "Mar", cantidad: 12, ingresos: 3000 },
+    { periodo: "Mié", cantidad: 10, ingresos: 2500 },
+    { periodo: "Jue", cantidad: 15, ingresos: 3750 },
+    { periodo: "Vie", cantidad: 18, ingresos: 4500 },
+    { periodo: "Sáb", cantidad: 14, ingresos: 3500 },
+    { periodo: "Dom", cantidad: 10, ingresos: 2500 },
+];
+
+// Spa
+export const evolucionSpaData = [
+    { periodo: "Lun", cantidad: 5, ingresos: 4000 },
+    { periodo: "Mar", cantidad: 7, ingresos: 5600 },
+    { periodo: "Mié", cantidad: 9, ingresos: 7200 },
+    { periodo: "Jue", cantidad: 6, ingresos: 4800 },
+    { periodo: "Vie", cantidad: 12, ingresos: 9600 },
+    { periodo: "Sáb", cantidad: 15, ingresos: 12000 },
+    { periodo: "Dom", cantidad: 10, ingresos: 8000 },
+];
+
+// Piscina
+export const evolucionPiscinaData = [
+    { periodo: "Lun", cantidad: 12, ingresos: 1800 },
+    { periodo: "Mar", cantidad: 15, ingresos: 2250 },
+    { periodo: "Mié", cantidad: 18, ingresos: 2700 },
+    { periodo: "Jue", cantidad: 20, ingresos: 3000 },
+    { periodo: "Vie", cantidad: 25, ingresos: 3750 },
+    { periodo: "Sáb", cantidad: 30, ingresos: 4500 },
+    { periodo: "Dom", cantidad: 22, ingresos: 3300 },
+];
+
+// Restaurant
+export const evolucionRestaurantData = [
+    { periodo: "Lun", cantidad: 18, ingresos: 9000 },
+    { periodo: "Mar", cantidad: 22, ingresos: 11000 },
+    { periodo: "Mié", cantidad: 25, ingresos: 12500 },
+    { periodo: "Jue", cantidad: 28, ingresos: 14000 },
+    { periodo: "Vie", cantidad: 35, ingresos: 17500 },
+    { periodo: "Sáb", cantidad: 40, ingresos: 20000 },
+    { periodo: "Dom", cantidad: 32, ingresos: 16000 },
+];
+
+// Room Service
+export const evolucionRoomServiceData = [
+    { periodo: "Lun", cantidad: 10, ingresos: 6000 },
+    { periodo: "Mar", cantidad: 14, ingresos: 8400 },
+    { periodo: "Mié", cantidad: 12, ingresos: 7200 },
+    { periodo: "Jue", cantidad: 16, ingresos: 9600 },
+    { periodo: "Vie", cantidad: 20, ingresos: 12000 },
+    { periodo: "Sáb", cantidad: 18, ingresos: 10800 },
+    { periodo: "Dom", cantidad: 15, ingresos: 9000 },
+];
+
+// Lavandería
+export const evolucionLavanderiaData = [
+    { periodo: "Lun", cantidad: 4, ingresos: 800 },
+    { periodo: "Mar", cantidad: 6, ingresos: 1200 },
+    { periodo: "Mié", cantidad: 5, ingresos: 1000 },
+    { periodo: "Jue", cantidad: 7, ingresos: 1400 },
+    { periodo: "Vie", cantidad: 9, ingresos: 1800 },
+    { periodo: "Sáb", cantidad: 8, ingresos: 1600 },
+    { periodo: "Dom", cantidad: 6, ingresos: 1200 },
+];
+
+// Configuración de barras para evolución temporal
+export const evolucionServiciosBarsConfig = [
+    { dataKey: "cantidad", name: "Cantidad de Usos", fill: "#667eea", radius: [8, 8, 0, 0] as [number, number, number, number] },
+    { dataKey: "ingresos", name: "Ingresos (Bs)", fill: "#10b981", radius: [8, 8, 0, 0] as [number, number, number, number] },
+];
+
+// Filtros para evolución de servicios
+export const evolucionServiciosFilterOptions = [
+    { value: "hoy", label: "Hoy" },
+    { value: "semana", label: "Esta Semana" },
+    { value: "mes", label: "Este Mes" },
+    { value: "anio", label: "Este Año" },
+];
+
+// Opciones de servicios para seleccionar
+export const serviciosSelectOptions = [
+    { value: "gym", label: "Gym" },
+    { value: "spa", label: "Spa" },
+    { value: "piscina", label: "Piscina" },
+    { value: "restaurant", label: "Restaurant" },
+    { value: "roomService", label: "Room Service" },
+    { value: "lavanderia", label: "Lavandería" },
+];

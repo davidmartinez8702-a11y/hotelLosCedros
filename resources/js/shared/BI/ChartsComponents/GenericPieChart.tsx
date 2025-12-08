@@ -98,7 +98,10 @@ export function GenericPieChart({
                             />
                         ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip
+                        content={<CustomTooltip />}
+                        cursor={{ fill: 'transparent' }}
+                    />
                 </PieChart>
             </ResponsiveContainer>
             <CustomLegend

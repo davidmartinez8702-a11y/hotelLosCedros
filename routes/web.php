@@ -3,6 +3,7 @@
 use App\CustomLoginResponse;
 use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BIController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\PlatilloController;
@@ -24,7 +25,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/login', function (Request $request) {
-    return Inertia::render('auth/Login',[
+    return Inertia::render('auth/Login', [
         'email' => $request->query('email')
     ]);
 })->name('login');
@@ -48,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('recepcion/dashboard', [AuthController::class, 'recepcionDashboard'])->name('dashboard.recepcion');
     Route::get('cliente/dashboard', [AuthController::class, 'clientDashboard'])->name('dashboard.cliente');
 
-    Route::prefix('usuarios')->name('usuarios.')->group(function(){
+    Route::prefix('usuarios')->name('usuarios.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::post('/store', [UserController::class, 'store'])->name('store');
@@ -57,11 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{user}', [UserController::class, 'show'])->name('show');
     });
 
-    Route::prefix('configuracion')->name('configuracion.')->group(function(){
+    Route::prefix('configuracion')->name('configuracion.')->group(function () {
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
     });
 
-    Route::prefix('categorias')->name('categorias.')->group(function(){
+    Route::prefix('categorias')->name('categorias.')->group(function () {
         Route::get('/', [CategoriaController::class, 'index'])->name('index');
         Route::get('/create', [CategoriaController::class, 'create'])->name('create');
         Route::post('/', [CategoriaController::class, 'store'])->name('store');
@@ -69,7 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{categoria}/edit', [CategoriaController::class, 'edit'])->name('edit');
         Route::put('/{categoria}', [CategoriaController::class, 'update'])->name('update');
     });
-    Route::prefix('servicios')->name('servicios.')->group(function(){
+    Route::prefix('servicios')->name('servicios.')->group(function () {
         Route::get('/', [ServicioController::class, 'index'])->name('index');
         Route::get('/create', [ServicioController::class, 'create'])->name('create');
         Route::post('/', [ServicioController::class, 'store'])->name('store');
@@ -83,7 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
 
-    Route::prefix('tipoHabitacion')->name('tipo-habitacion.')->group(function(){
+    Route::prefix('tipoHabitacion')->name('tipo-habitacion.')->group(function () {
         Route::get('/', [TipoHabitacionController::class, 'index'])->name('index');
         Route::get('/create', [TipoHabitacionController::class, 'create'])->name('create');
         Route::post('/', [TipoHabitacionController::class, 'store'])->name('store');
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-    Route::prefix('platillos')->name('platillos.')->group(function(){
+    Route::prefix('platillos')->name('platillos.')->group(function () {
         Route::get('/', [PlatilloController::class, 'index'])->name('index');
         Route::get('/create', [PlatilloController::class, 'create'])->name('create');
         Route::post('/', [PlatilloController::class, 'store'])->name('store');
@@ -110,10 +111,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{platillo}', [PlatilloController::class, 'update'])->name('update'); //post por que tiene imagen
     });
 
+    // Rutas de Business Intelligence
     Route::get('/BI', function () {
         return Inertia::render('BI/BIHotelGenerico');
     })->name('bi.index');
+
+    Route::get('/BI-dinamico', function () {
+        return Inertia::render('BI/BIHotelDinamico');
+    })->name('bi.index-dinamico');
+
+    // API endpoints para BI
 });
+Route::get('/api/bi/evolucion-servicios', [BIController::class, 'getEvolucionServicios'])->name('bi.api.evolucion-servicios');
 
 //rutas agrupadas
 // Route::middleware(['auth','verified'])->group(function(){
@@ -157,4 +166,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 //         'destroy' => 'usuarios.destroy',
 //     ]);
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('transaccions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cuenta_id')->constrained('cuentas');
-            $table->foreignId('servicio_id')->constrained('servicios')->nullable();
-            $table->foreignId('platillo_id')->constrained('platillos')->nullable();
+            $table->foreignId('servicio_id')->nullable()->constrained('servicios');
+            $table->foreignId('platillo_id')->nullable()->constrained('platillos');
             $table->string('estado')->default('pendiente');
             $table->integer('cantidad');
             $table->timestamps();

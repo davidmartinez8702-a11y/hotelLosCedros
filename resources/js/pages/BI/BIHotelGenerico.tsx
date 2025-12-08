@@ -39,6 +39,15 @@ import {
     checkinsCheckoutsBarsConfig,
     checkinsFilterOptions,
     comentariosData,
+    evolucionGymData,
+    evolucionSpaData,
+    evolucionPiscinaData,
+    evolucionRestaurantData,
+    evolucionRoomServiceData,
+    evolucionLavanderiaData,
+    evolucionServiciosBarsConfig,
+    evolucionServiciosFilterOptions,
+    serviciosSelectOptions,
 } from "./mockGenericCharts";
 import { kpisData } from "@/shared/BI/mocks";
 
@@ -55,6 +64,21 @@ const resumenData = [
 export default function BIHotelGenerico() {
     const [periodo, setPeriodo] = useState("mes");
     const [periodoCheckins, setPeriodoCheckins] = useState("hoy");
+    const [periodoServicios, setPeriodoServicios] = useState("semana");
+    const [servicioSeleccionado, setServicioSeleccionado] = useState("gym");
+
+    // Función para obtener datos según el servicio seleccionado
+    const getEvolucionServicioData = () => {
+        const dataMap: Record<string, any> = {
+            gym: evolucionGymData,
+            spa: evolucionSpaData,
+            piscina: evolucionPiscinaData,
+            restaurant: evolucionRestaurantData,
+            roomService: evolucionRoomServiceData,
+            lavanderia: evolucionLavanderiaData,
+        };
+        return dataMap[servicioSeleccionado] || evolucionGymData;
+    };
 
     return (
         <AppLayout
@@ -203,6 +227,58 @@ export default function BIHotelGenerico() {
                             onFilterChange={setPeriodo}
                             delay={500}
                         />
+                    </div>
+
+                    {/* Gráficas - Fila 6: Evolución Temporal de Servicios */}
+                    <div className="grid grid-cols-1 gap-6">
+                        <Card className="shadow-lg animate-in slide-in-from-bottom duration-700 hover:shadow-xl transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-2xl">Evolución Temporal de Uso de Servicios</CardTitle>
+                                        <CardDescription className="mt-2">
+                                            Cantidad de usos e ingresos por período de tiempo
+                                        </CardDescription>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {/* Selector de Servicio */}
+                                        <select
+                                            value={servicioSeleccionado}
+                                            onChange={(e) => setServicioSeleccionado(e.target.value)}
+                                            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            {serviciosSelectOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        {/* Selector de Período */}
+                                        <select
+                                            value={periodoServicios}
+                                            onChange={(e) => setPeriodoServicios(e.target.value)}
+                                            className="px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            {evolucionServiciosFilterOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <GenericMultiBarChart
+                                    data={getEvolucionServicioData()}
+                                    bars={evolucionServiciosBarsConfig}
+                                    categoryKey="periodo"
+                                    title=""
+                                    description=""
+                                />
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* Resumen de Rendimiento */}

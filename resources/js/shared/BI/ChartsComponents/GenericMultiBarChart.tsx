@@ -59,7 +59,10 @@ export function GenericMultiBarChart({
                         tick={{ fontSize: 12, fill: "#6b7280" }}
                         axisLine={{ stroke: "#e5e7eb" }}
                     />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip
+                        content={<CustomTooltip />}
+                        cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+                    />
                     <Legend
                         wrapperStyle={{ paddingTop: "10px", cursor: "pointer" }}
                         onClick={(e) => handleLegendClick(e.value || "")}
