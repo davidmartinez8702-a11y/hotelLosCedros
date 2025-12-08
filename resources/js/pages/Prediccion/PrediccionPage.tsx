@@ -68,7 +68,14 @@ export default function PrediccionPage() {
         form.method = 'POST';
         form.action = route('predicciones.reporte');
         
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        // Obtener el token CSRF correctamente
+        const csrfToken = document.head.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        if (!csrfToken) {
+            alert('Error: Token CSRF no encontrado');
+            return;
+        }
+        
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = '_token';

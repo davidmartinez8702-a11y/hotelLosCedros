@@ -42,7 +42,7 @@ export function GenericHorizontalBarChart({
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                     data={data}
-                    layout="horizontal"
+                    layout="vertical"
                     margin={{ top: 10, right: 30, left: 20, bottom: 0 }}
                 >
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -51,7 +51,7 @@ export function GenericHorizontalBarChart({
                         type="category"
                         dataKey={categoryKey}
                         tick={{ fontSize: 12, fill: "#6b7280" }}
-                        width={100}
+                        width={150}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend

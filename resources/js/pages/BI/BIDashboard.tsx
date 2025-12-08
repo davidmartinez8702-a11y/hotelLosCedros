@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Head } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
-import { 
-    TrendingUp, 
-    TrendingDown, 
-    Hotel, 
-    DollarSign, 
-    Calendar, 
+import {
+    TrendingUp,
+    TrendingDown,
+    Hotel,
+    DollarSign,
+    Calendar,
     Star,
     Users,
     Activity
@@ -20,29 +20,55 @@ import { GenericLineChart } from "@/shared/BI/ChartsComponents/GenericLineChart"
 import { GenericAreaChart } from "@/shared/BI/ChartsComponents/GenericAreaChart";
 import { GenericPieChart } from "@/shared/BI/ChartsComponents/GenericPieChart";
 
-// Datos
+// Componentes BI
+import { TimeFilterSelector } from "@/shared/BI/components/TimeFilterSelector";
+import { ReportGenerator } from "@/shared/BI/components/ReportGenerator";
+
+// Datos y utilidades
 import {
-    periodoFilterOptions,
-    ocupacionMensual,
-    ocupacionSemanal,
-    ingresosMensuales,
-    ingresosSemanales,
+    ocupacionData,
+    ingresosData,
+    reservasData,
+    huespedesData,
+    serviciosData,
     huespedPorCategoria,
     huespedPorNacionalidad,
-    huespedMensuales,
-    reservasPorEstado,
     reservasPorCanal,
     reservasPorTipoHabitacion,
     calificacionServicios,
-    usoServiciosMensual,
     ingresosPorServicio,
-    comparativaAnual,
-    prediccionesOcupacion,
-    kpisData,
-} from "./data";
+    availableYears,
+} from "@/shared/BI/mocks/timeSeriesData";
+
+import {
+    TimeFilter,
+    transformDataByFilter,
+    getCategoryKey,
+    getAvailableMonths,
+} from "@/shared/BI/utils/dataFilters";
+
+import {
+    generateCSVReport,
+    generateExcelReport,
+    generatePDFReport,
+    generateImageReport,
+    formatPeriodForFilename,
+    prepareDataForExport,
+} from "@/shared/BI/utils/reportGenerator";
+
+// KPIs calculados dinámicamente
+interface KPIData {
+    id: string;
+    titulo: string;
+    valor: string;
+    tendencia: "up" | "down";
+    porcentaje: number;
+    icono: "ocupacion" | "ingresos" | "reservas" | "satisfaccion";
+    gradiente: string;
+}
 
 // Componente KPI Card
-function KPICard({ kpi }: { kpi: typeof kpisData[0] }) {
+function KPICard({ kpi }: { kpi: KPIData }) {
     const iconMap = {
         ocupacion: Hotel,
         ingresos: DollarSign,
@@ -66,7 +92,7 @@ function KPICard({ kpi }: { kpi: typeof kpisData[0] }) {
                         <span className={kpi.tendencia === "up" ? "text-green-200" : "text-red-200"}>
                             {kpi.porcentaje}%
                         </span>
-                        <span className="opacity-75">vs mes anterior</span>
+                        <span className="opacity-75">vs período anterior</span>
                     </div>
                 </div>
                 <div className="rounded-full bg-white/20 p-3">
@@ -93,18 +119,126 @@ function Section({ title, icon: Icon, children }: { title: string; icon: any; ch
 }
 
 export default function BIDashboard() {
-    // Estados de filtros
-    const [periodoOcupacion, setPeriodoOcupacion] = useState("mes");
-    const [periodoIngresos, setPeriodoIngresos] = useState("mes");
-    const [periodoReservas, setPeriodoReservas] = useState("mes");
-    const [periodoServicios, setPeriodoServicios] = useState("mes");
+    // Estado del filtro temporal global
+    const [timeFilter, setTimeFilter] = useState<TimeFilter>({
+        granularity: 'month',
+        year: 2024,
+        month: undefined,
+    });
 
-    // Seleccionar datos según filtro
-    const ocupacionData = periodoOcupacion === "semana" ? ocupacionSemanal : ocupacionMensual;
-    const ocupacionCategoryKey = periodoOcupacion === "semana" ? "semana" : "mes";
-    
-    const ingresosData = periodoIngresos === "semana" ? ingresosSemanales : ingresosMensuales;
-    const ingresosCategoryKey = periodoIngresos === "semana" ? "semana" : "mes";
+    // Calcular meses disponibles para el año seleccionado
+    const availableMonths = useMemo(() => {
+        if (timeFilter.year) {
+            return getAvailableMonths(ocupacionData, timeFilter.year);
+        }
+        return [];
+    }, [timeFilter.year]);
+
+    // Transformar datos según filtro temporal
+    const filteredOcupacionData = useMemo(() => {
+        return transformDataByFilter(ocupacionData, timeFilter, ['ocupacion', 'meta']);
+    }, [timeFilter]);
+
+    const filteredIngresosData = useMemo(() => {
+        return transformDataByFilter(ingresosData, timeFilter, ['ingresos', 'gastos', 'beneficio']);
+    }, [timeFilter]);
+
+    const filteredReservasData = useMemo(() => {
+        return transformDataByFilter(reservasData, timeFilter, ['confirmadas', 'pendientes', 'canceladas']);
+    }, [timeFilter]);
+
+    const filteredHuespedesData = useMemo(() => {
+        return transformDataByFilter(huespedesData, timeFilter, ['nuevos', 'recurrentes']);
+    }, [timeFilter]);
+
+    const filteredServiciosData = useMemo(() => {
+        return transformDataByFilter(serviciosData, timeFilter, ['restaurante', 'spa', 'gimnasio', 'roomService']);
+    }, [timeFilter]);
+
+    // Calcular KPIs dinámicamente
+    const kpisData = useMemo((): KPIData[] => {
+        const ocupacionPromedio = filteredOcupacionData.length > 0
+            ? filteredOcupacionData.reduce((sum, item) => sum + item.ocupacion, 0) / filteredOcupacionData.length
+            : 0;
+
+        const ingresosTotal = filteredIngresosData.reduce((sum, item) => sum + item.ingresos, 0);
+        const reservasTotal = filteredReservasData.reduce((sum, item) => sum + item.confirmadas, 0);
+
+        return [
+            {
+                id: "ocupacion",
+                titulo: "Ocupación Promedio",
+                valor: `${ocupacionPromedio.toFixed(1)}%`,
+                tendencia: "up",
+                porcentaje: 5.2,
+                icono: "ocupacion",
+                gradiente: "from-blue-500 to-blue-600",
+            },
+            {
+                id: "ingresos",
+                titulo: "Ingresos Totales",
+                valor: `Bs ${(ingresosTotal / 1000).toFixed(0)}K`,
+                tendencia: "up",
+                porcentaje: 12.8,
+                icono: "ingresos",
+                gradiente: "from-green-500 to-green-600",
+            },
+            {
+                id: "reservas",
+                titulo: "Reservas Confirmadas",
+                valor: reservasTotal.toString(),
+                tendencia: "up",
+                porcentaje: 8.3,
+                icono: "reservas",
+                gradiente: "from-purple-500 to-purple-600",
+            },
+            {
+                id: "satisfaccion",
+                titulo: "Satisfacción",
+                valor: "4.7/5",
+                tendencia: "up",
+                porcentaje: 2.1,
+                icono: "satisfaccion",
+                gradiente: "from-amber-500 to-amber-600",
+            },
+        ];
+    }, [filteredOcupacionData, filteredIngresosData, filteredReservasData]);
+
+    // Obtener clave de categoría según granularidad
+    const categoryKey = getCategoryKey(timeFilter.granularity);
+
+    // Manejar generación de reportes
+    const handleGenerateReport = (format: 'pdf' | 'excel' | 'csv' | 'image') => {
+        const periodStr = formatPeriodForFilename(timeFilter);
+        const timestamp = new Date().toISOString().split('T')[0];
+
+        switch (format) {
+            case 'csv':
+                generateCSVReport(
+                    filteredOcupacionData,
+                    `reporte-ocupacion-${periodStr}-${timestamp}.csv`
+                );
+                break;
+            case 'excel':
+                generateExcelReport(
+                    filteredIngresosData,
+                    `reporte-ingresos-${periodStr}-${timestamp}.json`
+                );
+                break;
+            case 'pdf':
+                const reportData = prepareDataForExport(
+                    filteredOcupacionData,
+                    filteredIngresosData,
+                    filteredReservasData,
+                    timeFilter
+                );
+                generatePDFReport(reportData);
+                break;
+            case 'image':
+                generateImageReport('dashboard-content');
+                break;
+        }
+    };
 
     return (
         <AppLayout
@@ -115,17 +249,31 @@ export default function BIDashboard() {
         >
             <Head title="Business Intelligence - Hotel" />
 
-            <div className="py-8 lg:py-12">
+            <div className="py-8 lg:py-12" id="dashboard-content">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     {/* Header */}
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            📊 Dashboard de Business Intelligence
-                        </h1>
-                        <p className="mt-2 text-gray-600">
-                            Análisis completo del rendimiento del hotel
-                        </p>
+                    <div className="mb-8 flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">
+                                📊 Dashboard de Business Intelligence
+                            </h1>
+                            <p className="mt-2 text-gray-600">
+                                Análisis completo del rendimiento del hotel con datos temporales
+                            </p>
+                        </div>
+                        <ReportGenerator
+                            filter={timeFilter}
+                            onGenerateReport={handleGenerateReport}
+                        />
                     </div>
+
+                    {/* Filtros Temporales */}
+                    <TimeFilterSelector
+                        filter={timeFilter}
+                        onFilterChange={setTimeFilter}
+                        availableYears={availableYears}
+                        availableMonths={availableMonths}
+                    />
 
                     {/* KPIs */}
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -138,30 +286,26 @@ export default function BIDashboard() {
                     <Section title="Análisis de Ocupación" icon={Hotel}>
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <GenericLineChart
-                                data={ocupacionData}
+                                data={filteredOcupacionData}
                                 lines={[
                                     { dataKey: "ocupacion", stroke: "#667eea", name: "Ocupación %" },
                                     { dataKey: "meta", stroke: "#10b981", name: "Meta %", strokeDasharray: "5 5" },
                                 ]}
-                                categoryKey={ocupacionCategoryKey}
+                                categoryKey={categoryKey}
                                 title="Tasa de Ocupación"
                                 description="Ocupación real vs meta establecida"
-                                filterOptions={periodoFilterOptions}
-                                filterValue={periodoOcupacion}
-                                onFilterChange={setPeriodoOcupacion}
                                 delay={0}
                             />
 
                             <GenericAreaChart
-                                data={prediccionesOcupacion}
+                                data={filteredOcupacionData}
                                 areas={[
-                                    { dataKey: "maximo", stroke: "#10b981", fill: "#10b981", name: "Máximo", stackId: "1" },
-                                    { dataKey: "prediccion", stroke: "#667eea", fill: "#667eea", name: "Predicción", stackId: "2" },
-                                    { dataKey: "minimo", stroke: "#f59e0b", fill: "#f59e0b", name: "Mínimo", stackId: "3" },
+                                    { dataKey: "ocupacion", stroke: "#667eea", fill: "#667eea", name: "Ocupación" },
+                                    { dataKey: "meta", stroke: "#10b981", fill: "#10b981", name: "Meta" },
                                 ]}
-                                categoryKey="fecha"
-                                title="Predicción de Ocupación"
-                                description="Proyección para las próximas semanas"
+                                categoryKey={categoryKey}
+                                title="Tendencia de Ocupación"
+                                description="Evolución temporal de la ocupación"
                                 stacked={false}
                                 delay={100}
                             />
@@ -172,30 +316,27 @@ export default function BIDashboard() {
                     <Section title="Análisis Financiero" icon={DollarSign}>
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <GenericMultiBarChart
-                                data={ingresosData}
+                                data={filteredIngresosData}
                                 bars={[
                                     { dataKey: "ingresos", fill: "#667eea", name: "Ingresos" },
                                     { dataKey: "gastos", fill: "#ef4444", name: "Gastos" },
                                     { dataKey: "beneficio", fill: "#10b981", name: "Beneficio" },
                                 ]}
-                                categoryKey={ingresosCategoryKey}
+                                categoryKey={categoryKey}
                                 title="Ingresos vs Gastos"
-                                description="Comparativa financiera mensual"
-                                filterOptions={periodoFilterOptions}
-                                filterValue={periodoIngresos}
-                                onFilterChange={setPeriodoIngresos}
+                                description="Comparativa financiera"
                                 delay={200}
                             />
 
                             <GenericLineChart
-                                data={comparativaAnual}
+                                data={filteredIngresosData}
                                 lines={[
-                                    { dataKey: "añoAnterior", stroke: "#9ca3af", name: "2023", strokeDasharray: "5 5" },
-                                    { dataKey: "añoActual", stroke: "#667eea", name: "2024" },
+                                    { dataKey: "ingresos", stroke: "#667eea", name: "Ingresos" },
+                                    { dataKey: "beneficio", stroke: "#10b981", name: "Beneficio" },
                                 ]}
-                                categoryKey="mes"
-                                title="Comparativa Anual"
-                                description="Ingresos 2024 vs 2023"
+                                categoryKey={categoryKey}
+                                title="Evolución de Ingresos"
+                                description="Tendencia de ingresos y beneficios"
                                 delay={300}
                             />
                         </div>
@@ -225,13 +366,13 @@ export default function BIDashboard() {
                             />
 
                             <GenericMultiBarChart
-                                data={huespedMensuales}
+                                data={filteredHuespedesData}
                                 bars={[
                                     { dataKey: "nuevos", fill: "#667eea", name: "Nuevos" },
                                     { dataKey: "recurrentes", fill: "#10b981", name: "Recurrentes" },
                                 ]}
-                                categoryKey="mes"
-                                title="Evolución Mensual"
+                                categoryKey={categoryKey}
+                                title="Evolución Temporal"
                                 description="Nuevos vs recurrentes"
                                 delay={600}
                             />
@@ -242,18 +383,15 @@ export default function BIDashboard() {
                     <Section title="Análisis de Reservas" icon={Calendar}>
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <GenericAreaChart
-                                data={reservasPorEstado}
+                                data={filteredReservasData}
                                 areas={[
                                     { dataKey: "confirmadas", stroke: "#10b981", fill: "#10b981", name: "Confirmadas" },
                                     { dataKey: "pendientes", stroke: "#f59e0b", fill: "#f59e0b", name: "Pendientes" },
                                     { dataKey: "canceladas", stroke: "#ef4444", fill: "#ef4444", name: "Canceladas" },
                                 ]}
-                                categoryKey="mes"
+                                categoryKey={categoryKey}
                                 title="Estado de Reservas"
-                                description="Evolución mensual por estado"
-                                filterOptions={periodoFilterOptions}
-                                filterValue={periodoReservas}
-                                onFilterChange={setPeriodoReservas}
+                                description="Evolución por estado"
                                 delay={700}
                             />
 
@@ -272,11 +410,11 @@ export default function BIDashboard() {
                                 data={reservasPorTipoHabitacion}
                                 bars={[
                                     { dataKey: "reservas", fill: "#667eea", name: "Reservas" },
-                                    { dataKey: "ingresoPromedio", fill: "#10b981", name: "Ingreso Promedio ($)" },
+                                    { dataKey: "ingresoPromedio", fill: "#10b981", name: "Ingreso Promedio (Bs)" },
                                 ]}
                                 categoryKey="tipo"
                                 title="Reservas por Tipo de Habitación"
-                                description="Cantidad de reservas e ingreso promedio"
+                                description="Cantidad de reservas e ingreso promedio (datos acumulados)"
                                 delay={900}
                             />
                         </div>
@@ -296,19 +434,16 @@ export default function BIDashboard() {
                             />
 
                             <GenericMultiBarChart
-                                data={usoServiciosMensual}
+                                data={filteredServiciosData}
                                 bars={[
                                     { dataKey: "restaurante", fill: "#667eea", name: "Restaurante" },
                                     { dataKey: "spa", fill: "#10b981", name: "Spa" },
                                     { dataKey: "gimnasio", fill: "#f59e0b", name: "Gimnasio" },
                                     { dataKey: "roomService", fill: "#ef4444", name: "Room Service" },
                                 ]}
-                                categoryKey="mes"
-                                title="Uso de Servicios"
-                                description="Cantidad de usos mensuales"
-                                filterOptions={periodoFilterOptions}
-                                filterValue={periodoServicios}
-                                onFilterChange={setPeriodoServicios}
+                                categoryKey={categoryKey}
+                                title="Uso de Servicios Temporal"
+                                description="Evolución del uso de servicios"
                                 delay={1100}
                             />
                         </div>
@@ -317,11 +452,11 @@ export default function BIDashboard() {
                             <GenericHorizontalBarChart
                                 data={ingresosPorServicio}
                                 bars={[
-                                    { dataKey: "ingresos", fill: "#667eea", name: "Ingresos ($)" },
+                                    { dataKey: "ingresos", fill: "#667eea", name: "Ingresos (Bs)" },
                                 ]}
                                 categoryKey="servicio"
                                 title="Ingresos por Servicio"
-                                description="Ingresos generados por cada servicio"
+                                description="Ingresos generados por cada servicio (datos acumulados)"
                                 delay={1200}
                             />
                         </div>
@@ -330,7 +465,7 @@ export default function BIDashboard() {
                     {/* Footer */}
                     <div className="text-center text-sm text-gray-500 py-4">
                         <p>
-                            📊 Dashboard actualizado automáticamente cada 5 minutos |
+                            📊 Dashboard con datos de {availableYears[0]} a {availableYears[availableYears.length - 1]} |
                             Última actualización: {new Date().toLocaleString("es-ES")}
                         </p>
                     </div>

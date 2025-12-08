@@ -9,7 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PrediccionController extends Controller
 {
-    private $microservicioUrl = 'http://localhost:5000'; // Ajusta al puerto de tu microservicio
+    private $microservicioUrl = 'http://localhost:5000';
 
     public function index()
     {
@@ -19,7 +19,7 @@ class PrediccionController extends Controller
     public function predecirDemanda($dias)
     {
         try {
-            $response = Http::get("{$this->microservicioUrl}/api/predict/demand/{$dias}");
+            $response = Http::timeout(30)->get("{$this->microservicioUrl}/api/predict/demand/{$dias}");
 
             if ($response->successful()) {
                 return response()->json([
@@ -37,7 +37,7 @@ class PrediccionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'No se pudo conectar con el microservicio: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -45,7 +45,7 @@ class PrediccionController extends Controller
     public function predecirIngresos($dias)
     {
         try {
-            $response = Http::get("{$this->microservicioUrl}/api/predict/revenue/{$dias}");
+            $response = Http::timeout(30)->get("{$this->microservicioUrl}/api/predict/revenue/{$dias}");
 
             if ($response->successful()) {
                 return response()->json([
@@ -63,7 +63,7 @@ class PrediccionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'No se pudo conectar con el microservicio: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -71,7 +71,7 @@ class PrediccionController extends Controller
     public function predecirCancelaciones($dias)
     {
         try {
-            $response = Http::get("{$this->microservicioUrl}/api/predict/cancellations/{$dias}");
+            $response = Http::timeout(30)->get("{$this->microservicioUrl}/api/predict/cancellations/{$dias}");
 
             if ($response->successful()) {
                 return response()->json([
@@ -89,7 +89,7 @@ class PrediccionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'No se pudo conectar con el microservicio: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -98,28 +98,42 @@ class PrediccionController extends Controller
     {
         $request->validate([
             'tipo' => 'required|in:demanda,ingresos,cancelaciones',
-            'data' => 'required|array',
+            'data' => 'required|string',
             'dias' => 'required|integer'
         ]);
 
+        // Decodificar el JSON
+        $predicciones = json_decode($request->data, true);
+
+        if (!$predicciones) {
+            return back()->with('error', 'Datos de predicción inválidos');
+        }
+
         $data = [
             'tipo' => $request->tipo,
-            'predicciones' => $request->data,
+            'predicciones' => $predicciones,
             'dias' => $request->dias,
             'fecha_generacion' => now()->format('d/m/Y H:i:s'),
             'titulo' => $this->getTituloReporte($request->tipo)
         ];
 
-        $pdf = Pdf::loadView('reportes.predicciones', $data);
+        $pdf = Pdf::loadView('reportes.predicciones', $data)
+                  ->setPaper('letter', 'portrait')
+                  ->setOption('margin-top', 10)
+                  ->setOption('margin-bottom', 10)
+                  ->setOption('margin-left', 15)
+                  ->setOption('margin-right', 15);
         
-        return $pdf->download("reporte-prediccion-{$request->tipo}-" . now()->format('Y-m-d') . ".pdf");
+        $filename = "reporte-prediccion-{$request->tipo}-" . now()->format('Y-m-d-His') . ".pdf";
+        
+        return $pdf->download($filename);
     }
 
     private function getTituloReporte($tipo)
     {
         return match($tipo) {
             'demanda' => 'Predicción de Demanda de Habitaciones',
-            'ingresos' => 'Predicción de Ingresos',
+            'ingresos' => 'Predicción de Ingresos Esperados',
             'cancelaciones' => 'Predicción de Cancelaciones',
             default => 'Reporte de Predicción'
         };
