@@ -255,7 +255,7 @@ export default function BIDashboard() {
                     <div className="mb-8 flex items-center justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">
-                                📊 Dashboard de Business Intelligence
+                                Dashboard de Business Intelligence
                             </h1>
                             <p className="mt-2 text-gray-600">
                                 Análisis completo del rendimiento del hotel con datos temporales
@@ -465,7 +465,7 @@ export default function BIDashboard() {
                     {/* Footer */}
                     <div className="text-center text-sm text-gray-500 py-4">
                         <p>
-                            📊 Dashboard con datos de {availableYears[0]} a {availableYears[availableYears.length - 1]} |
+                            Dashboard con datos de {availableYears[0]} a {availableYears[availableYears.length - 1]} |
                             Última actualización: {new Date().toLocaleString("es-ES")}
                         </p>
                     </div>

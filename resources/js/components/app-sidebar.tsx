@@ -59,20 +59,20 @@ const mainNavItems: NavItem[] = [
         href:tipoHabitacion.index(),
         icon:HotelIcon,
     },
+    // {
+    //     title:'BI',
+    //     //href: route('tipo-habitacion.index'),
+    //     href:route('bi.index'),
+    //     icon:BoxIcon,
+    // },
+    // {
+    //     title:'BI Dinamico',
+    //     //href: route('tipo-habitacion.index'),
+    //     href:route('bi.index-dinamico'),
+    //     icon:BoxIcon,
+    // },
     {
         title:'BI',
-        //href: route('tipo-habitacion.index'),
-        href:route('bi.index'),
-        icon:BoxIcon,
-    },
-    {
-        title:'BI Dinamico',
-        //href: route('tipo-habitacion.index'),
-        href:route('bi.index-dinamico'),
-        icon:BoxIcon,
-    },
-    {
-        title:'BI v2',
         //href: route('tipo-habitacion.index'),
         href:route('bi.index-v2'),
         icon:BoxIcon,
