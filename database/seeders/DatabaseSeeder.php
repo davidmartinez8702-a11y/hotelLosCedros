@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
             ComentarioSeeder::class,
             CaracteristicaSeeder::class,    
             HabitacionCaracteristicaSeeder::class,
+            TipoPagoSeeder::class,
+            ReservaSeeder::class
         ]);
     }
 }

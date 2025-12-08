@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('facturas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cuenta_id')->constrained('cuentas')->unique();
-            $table->foreignId('reserva_id')->constrained('reservas')->nullable()->unique();
-            $table->foreignId('checkin_id')->constrained('checkins')->nullable()->unique();
+            
+            $table->foreignId('cuenta_id')->nullable()->constrained('cuentas'); 
+            $table->foreignId('reserva_id')->nullable()->constrained('reservas');
+            $table->foreignId('checkin_id')->nullable()->constrained('checkins');
             $table->foreignId('tipo_pago_id')->constrained('tipo_pagos');
             $table->decimal('monto_total',10,2)->default(0);
             $table->decimal('monto_relativo',10,2)->default(0);

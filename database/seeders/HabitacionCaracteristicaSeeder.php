@@ -382,7 +382,7 @@ class HabitacionCaracteristicaSeeder extends Seeder
                         $creados++;
                         $this->command->info("      ✅ Vinculado: {$nombreCaracteristica}");
                     }
-
+                    DB::commit();
                 } catch (Exception $e) {
                     DB::rollBack();
                     $errores++;
