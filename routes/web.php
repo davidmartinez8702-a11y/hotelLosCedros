@@ -121,6 +121,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('BI/BIHotelDinamico');
     })->name('bi.index-dinamico');
 
+
+    Route::get('/BI-v2', function () {
+        return Inertia::render('BI/BIDashboard');
+    })->name('bi.index-v2');
+
     // API endpoints para BI
 });
 Route::get('/api/bi/evolucion-servicios', [BIController::class, 'getEvolucionServicios'])->name('bi.api.evolucion-servicios');

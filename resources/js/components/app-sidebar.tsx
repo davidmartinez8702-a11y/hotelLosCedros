@@ -72,6 +72,12 @@ const mainNavItems: NavItem[] = [
         icon:BoxIcon,
     },
     {
+        title:'BI v2',
+        //href: route('tipo-habitacion.index'),
+        href:route('bi.index-v2'),
+        icon:BoxIcon,
+    },
+    {
         title: 'Configuracion',
         href: configuracion.index(),
         icon: CpuIcon,
