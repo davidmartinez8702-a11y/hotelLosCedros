@@ -21,6 +21,7 @@ import {
 
 // Hooks
 import { useEvolucionServicios } from "@/hooks/useEvolucionServicios";
+import { useUsoServicios } from "@/hooks/useUsoServicios";
 
 // Configuración
 import { serviciosMap, periodosMap } from "./serviciosConfig";
@@ -61,19 +62,69 @@ const resumenData = [
     { valor: "92%", label: "Tasa Conversión", gradiente: "from-teal-50 to-cyan-50", color: "text-teal-600" },
 ];
 
+// Paleta de colores para servicios
+const coloresPorServicio: Record<number, { cantidad: string; ingresos: string }> = {
+    1: { cantidad: '#3b82f6', ingresos: '#60a5fa' }, // Gym - Azul
+    2: { cantidad: '#8b5cf6', ingresos: '#a78bfa' }, // Spa - Púrpura
+    3: { cantidad: '#06b6d4', ingresos: '#22d3ee' }, // Piscina - Cyan
+    4: { cantidad: '#f59e0b', ingresos: '#fbbf24' }, // Restaurant - Ámbar
+    5: { cantidad: '#10b981', ingresos: '#34d399' }, // Room Service - Verde
+    6: { cantidad: '#ec4899', ingresos: '#f472b6' }, // Lavandería - Rosa
+};
+
+const getColorForService = (servicioId: number, tipo: 'cantidad' | 'ingresos'): string => {
+    return coloresPorServicio[servicioId]?.[tipo] || '#6b7280';
+};
+
 export default function BIHotelDinamico() {
     const [periodo, setPeriodo] = useState("mes");
     const [periodoCheckins, setPeriodoCheckins] = useState("hoy");
     const [periodoServicios, setPeriodoServicios] = useState("semana");
     const [servicioSeleccionado, setServicioSeleccionado] = useState("gym");
 
-    // Hook para obtener datos reales del backend
+    // Estados para Uso de Servicios
+    const [granularidad, setGranularidad] = useState<'anio' | 'mes' | 'dia'>('anio');
+    const [anioUso, setAnioUso] = useState(new Date().getFullYear());
+    const [mesUso, setMesUso] = useState<number | undefined>();
+    const [diaUso, setDiaUso] = useState<number | undefined>();
+
+    // Hook para obtener datos reales del backend - Evolución Servicios
     const servicioId = serviciosMap[servicioSeleccionado];
     const periodoBackend = periodosMap[periodoServicios] || periodoServicios;
     const { data: evolucionData, servicio, metadata, loading, error } = useEvolucionServicios(
         servicioId,
         periodoBackend
     );
+
+    // Hook para obtener datos reales del backend - Uso de Servicios
+    const {
+        data: usoServiciosData,
+        ejeX: usoServiciosEjeX,
+        metadata: usoServiciosMetadata,
+        loading: usoServiciosLoading,
+        error: usoServiciosError
+    } = useUsoServicios({
+        granularidad,
+        anio: anioUso,
+        mes: mesUso,
+        dia: diaUso,
+    });
+
+    // Generar configuración de barras dinámicamente para Uso de Servicios
+    const usoServiciosBarsConfig = usoServiciosMetadata?.servicios.flatMap((servicio: any) => [
+        {
+            dataKey: `${servicio.nombre}_cantidad`,
+            name: `${servicio.nombre} (Cantidad)`,
+            fill: getColorForService(servicio.id, 'cantidad'),
+            radius: [8, 8, 0, 0],
+        },
+        {
+            dataKey: `${servicio.nombre}_ingresos`,
+            name: `${servicio.nombre} (Ingresos Bs)`,
+            fill: getColorForService(servicio.id, 'ingresos'),
+            radius: [8, 8, 0, 0],
+        },
+    ]) || [];
 
     return (
         <AppLayout
@@ -98,7 +149,7 @@ export default function BIHotelDinamico() {
 
                     <Separator className="my-8" />
 
-                   
+
 
                     {/* Gráficas - Fila 6: Evolución Temporal de Servicios (DINÁMICO) */}
                     <div className="grid grid-cols-1 gap-6">

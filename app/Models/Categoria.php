@@ -24,23 +24,32 @@ class Categoria extends Model
     }
 
     /**
-     * Scope para filtrar por tipo
+     * Scope para filtrar por tipo habitacion
      */
     public function scopeHabitaciones($query)
     {
         return $query->where('tipo', 'habitacion');
     }
 
+    /**
+     * Scope para filtrar por tipo platillo
+     */
     public function scopePlatillos($query)
     {
         return $query->where('tipo', 'platillo');
     }
 
+    /**
+     * Scope para filtrar por tipo servicio
+     */
     public function scopeServicios($query)
     {
         return $query->where('tipo', 'servicio');
     }
 
+    /**
+     * Scope para activos
+     */
     public function scopeActivos($query)
     {
         return $query->where('estado', 'activo');

@@ -210,4 +210,191 @@ class BIController extends Controller
 
         return $data;
     }
+
+    /**
+     * Obtener uso de todos los servicios con granularidad dinámica
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUsoServicios(Request $request)
+    {
+        $granularidad = $request->input('granularidad', 'mes'); // anio, mes, dia
+        $anio = $request->input('anio', Carbon::now()->year);
+        $mes = $request->input('mes'); // 1-12
+        $dia = $request->input('dia'); // 1-31
+
+        // Obtener todos los servicios activos
+        $servicios = Servicio::where('estado', 'activo')->get();
+
+        if ($servicios->isEmpty()) {
+            return response()->json([
+                'error' => 'No hay servicios disponibles'
+            ], 404);
+        }
+
+        $data = [];
+        $ejeX = [];
+        $metadata = [
+            'granularidad' => $granularidad,
+            'periodo' => '',
+            'servicios' => [],
+        ];
+
+        switch ($granularidad) {
+            case 'anio':
+                // Año seleccionado → Eje X: Meses
+                $data = $this->getUsoServiciosPorMes($servicios, $anio);
+                $ejeX = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                $metadata['periodo'] = "Año {$anio}";
+                break;
+
+            case 'mes':
+                // Mes seleccionado → Eje X: Semanas
+                if (!$mes) {
+                    return response()->json(['error' => 'Se requiere el mes'], 400);
+                }
+                $data = $this->getUsoServiciosPorSemana($servicios, $anio, $mes);
+                $ejeX = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5'];
+                $metadata['periodo'] = Carbon::create($anio, $mes, 1)->format('F Y');
+                break;
+
+            case 'dia':
+                // Día seleccionado → Eje X: Horas
+                if (!$mes || !$dia) {
+                    return response()->json(['error' => 'Se requiere mes y día'], 400);
+                }
+                $data = $this->getUsoServiciosPorHora($servicios, $anio, $mes, $dia);
+                $ejeX = array_map(fn($h) => sprintf('%02d:00', $h), range(0, 23));
+                $metadata['periodo'] = Carbon::create($anio, $mes, $dia)->format('d/m/Y');
+                break;
+
+            default:
+                return response()->json(['error' => 'Granularidad inválida'], 400);
+        }
+
+        // Metadata de servicios
+        foreach ($servicios as $servicio) {
+            $metadata['servicios'][] = [
+                'id' => $servicio->id,
+                'nombre' => $servicio->nombre,
+                'precio' => $servicio->precio,
+            ];
+        }
+
+        return response()->json([
+            'data' => $data,
+            'ejeX' => $ejeX,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    /**
+     * Uso de servicios por mes (para granularidad año)
+     */
+    private function getUsoServiciosPorMes($servicios, $anio)
+    {
+        $data = [];
+
+        for ($mes = 1; $mes <= 12; $mes++) {
+            $punto = ['periodo' => $mes];
+
+            foreach ($servicios as $servicio) {
+                $inicioMes = Carbon::create($anio, $mes, 1)->startOfMonth();
+                $finMes = Carbon::create($anio, $mes, 1)->endOfMonth();
+
+                $resultado = Transaccion::where('servicio_id', $servicio->id)
+                    ->whereBetween('created_at', [$inicioMes, $finMes])
+                    ->selectRaw('SUM(cantidad) as total_cantidad')
+                    ->first();
+
+                $cantidad = $resultado->total_cantidad ?? 0;
+                $punto["{$servicio->nombre}_cantidad"] = (int) $cantidad;
+                $punto["{$servicio->nombre}_ingresos"] = (float) ($cantidad * $servicio->precio);
+            }
+
+            $data[] = $punto;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Uso de servicios por semana (para granularidad mes)
+     */
+    private function getUsoServiciosPorSemana($servicios, $anio, $mes)
+    {
+        $data = [];
+        $inicioMes = Carbon::create($anio, $mes, 1);
+        $finMes = $inicioMes->copy()->endOfMonth();
+
+        // Dividir el mes en semanas
+        $semanas = [];
+        $diaActual = $inicioMes->copy();
+        $semanaNum = 1;
+
+        while ($diaActual <= $finMes) {
+            $finSemana = $diaActual->copy()->addDays(6);
+            if ($finSemana > $finMes) {
+                $finSemana = $finMes->copy();
+            }
+
+            $semanas[] = [
+                'numero' => $semanaNum,
+                'inicio' => $diaActual->copy(),
+                'fin' => $finSemana->copy(),
+            ];
+
+            $diaActual->addDays(7);
+            $semanaNum++;
+        }
+
+        foreach ($semanas as $semana) {
+            $punto = ['periodo' => $semana['numero']];
+
+            foreach ($servicios as $servicio) {
+                $resultado = Transaccion::where('servicio_id', $servicio->id)
+                    ->whereBetween('created_at', [$semana['inicio'], $semana['fin']])
+                    ->selectRaw('SUM(cantidad) as total_cantidad')
+                    ->first();
+
+                $cantidad = $resultado->total_cantidad ?? 0;
+                $punto["{$servicio->nombre}_cantidad"] = (int) $cantidad;
+                $punto["{$servicio->nombre}_ingresos"] = (float) ($cantidad * $servicio->precio);
+            }
+
+            $data[] = $punto;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Uso de servicios por hora (para granularidad día)
+     */
+    private function getUsoServiciosPorHora($servicios, $anio, $mes, $dia)
+    {
+        $data = [];
+        $fecha = Carbon::create($anio, $mes, $dia);
+
+        for ($hora = 0; $hora < 24; $hora++) {
+            $punto = ['periodo' => $hora];
+
+            foreach ($servicios as $servicio) {
+                $resultado = Transaccion::where('servicio_id', $servicio->id)
+                    ->whereDate('created_at', $fecha)
+                    ->whereRaw('EXTRACT(HOUR FROM created_at) = ?', [$hora])
+                    ->selectRaw('SUM(cantidad) as total_cantidad')
+                    ->first();
+
+                $cantidad = $resultado->total_cantidad ?? 0;
+                $punto["{$servicio->nombre}_cantidad"] = (int) $cantidad;
+                $punto["{$servicio->nombre}_ingresos"] = (float) ($cantidad * $servicio->precio);
+            }
+
+            $data[] = $punto;
+        }
+
+        return $data;
+    }
 }

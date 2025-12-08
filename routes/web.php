@@ -124,6 +124,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // API endpoints para BI
 });
 Route::get('/api/bi/evolucion-servicios', [BIController::class, 'getEvolucionServicios'])->name('bi.api.evolucion-servicios');
+Route::get('/api/bi/uso-servicios', [BIController::class, 'getUsoServicios'])->name('bi.api.uso-servicios');
 
 //rutas agrupadas
 // Route::middleware(['auth','verified'])->group(function(){
