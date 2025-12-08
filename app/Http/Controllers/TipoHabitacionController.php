@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Categoria;
 use App\Models\Imagen;
 use App\Models\TipoHabitacion;
 use Illuminate\Http\Request;
@@ -14,38 +15,43 @@ class TipoHabitacionController extends Controller
      */
     public function index(Request $request)
     {
-        // Construir la consulta base
         $query = TipoHabitacion::query();
 
-        // Aplicar filtro por estado
+        // Filtrar por estado
         if ($request->filled('estado') && $request->estado !== 'todos') {
             $query->where('estado', $request->estado);
         }
 
-        // Aplicar filtro por tipo
+        // Filtrar por tipo
         if ($request->filled('tipo') && $request->tipo !== 'todos') {
             $query->where('tipo', $request->tipo);
         }
 
-        // Aplicar búsqueda por nombre
+        // Filtrar por categoría
+        if ($request->filled('categoria_id') && $request->categoria_id !== 'todos') {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Búsqueda por nombre
         if ($request->filled('search')) {
             $query->where('nombre', 'like', '%' . $request->search . '%');
         }
 
-        // Obtener los datos paginados
-        $tipoHabitaciones = $query->paginate(10)->withQueryString();
+        $tipoHabitaciones = $query->with('categoria')->paginate(10)->withQueryString();
 
-        // Retornar la vista con los datos
+        $categorias = Categoria::where('estado', 'activo')->where('tipo','habitacion')->get(['id', 'nombre']);
+
         return inertia('TipoHabitacion/TipoHabitacionPage', [
             'tipoHabitaciones' => $tipoHabitaciones,
+            'categorias' => $categorias,
             'filters' => [
                 'search' => $request->search ?? '',
                 'estado' => $request->estado ?? 'todos',
                 'tipo' => $request->tipo ?? 'todos',
+                'categoria_id' => $request->categoria_id ?? 'todos',
             ],
         ]);
     }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -57,6 +63,7 @@ class TipoHabitacionController extends Controller
             'capacidad_total' => 'nullable|integer|min:0',
             'precio' => 'required|numeric|min:0',
             'tipo' => 'required|in:habitacion,evento',
+            'categoria_id' => 'required|exists:categorias,id',
         ]);
     
         // Si el tipo es "evento", establecer capacidades de adultos e infantes en 0
@@ -81,8 +88,11 @@ class TipoHabitacionController extends Controller
      */
     public function create()
     {
-        // Retornar la vista para crear un nuevo tipo de habitación o evento
-        return inertia('TipoHabitacion/TipoHabitacionPageCreate');
+        $categorias = Categoria::where('estado', 'activo')->where('tipo','habitacion')->get(['id', 'nombre']);
+
+        return inertia('TipoHabitacion/TipoHabitacionPageCreate', [
+            'categorias' => $categorias,
+        ]);
     }
     /**
      * Store a newly created resource in storage.
@@ -109,6 +119,10 @@ class TipoHabitacionController extends Controller
                     'capacidad_total' => $tipoHabitacion->capacidad_total,
                     'precio' => $tipoHabitacion->precio,
                     'tipo' => $tipoHabitacion->tipo,
+                    'categoria' => [
+                            'id' => $tipoHabitacion->categoria->id,
+                            'nombre' => $tipoHabitacion->categoria->nombre,
+                        ],
                     'created_at' => $tipoHabitacion->created_at->format('d/m/Y'),
                     'updated_at' => $tipoHabitacion->updated_at->format('d/m/Y'),
                 ]
@@ -120,9 +134,11 @@ class TipoHabitacionController extends Controller
      */
     public function edit(TipoHabitacion $tipoHabitacion)
     {
-        // Retornar la vista para editar el tipo de habitación
+        $categorias = Categoria::where('estado', 'activo')->where('tipo','habitacion')->get(['id', 'nombre']);
+
         return inertia('TipoHabitacion/TipoHabitacionPageEdit', [
             'tipoHabitacion' => $tipoHabitacion,
+            'categorias' => $categorias,
         ]);
     }
 
@@ -140,6 +156,7 @@ class TipoHabitacionController extends Controller
             'capacidad_total' => 'nullable|integer|min:0',
             'precio' => 'required|numeric|min:0',
             'tipo' => 'required|in:habitacion,evento',
+            'categoria_id' => 'required|exists:categorias,id',
         ]);
 
         // Si el tipo es "evento", limpiar capacidades de adultos e infantes

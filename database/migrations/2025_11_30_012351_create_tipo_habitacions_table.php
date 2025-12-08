@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tipo_habitacions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('categoria_id')->constrained('categorias');
             $table->string('nombre',100);
             $table->string('descripcion')->nullable();
             $table->string('estado')->default('activo');

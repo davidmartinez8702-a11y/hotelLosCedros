@@ -18,9 +18,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesSeeder::class,
             StaffSeeder::class,
+            UserClienteSeeder::class,
             CategoriaSeeder::class,
+            TipoHabitacionSeeder::class,
+            HabitacionEventoSeeder::class,
             ServicioSeeder::class,
             PlatilloSeeder::class,
+            ComentarioSeeder::class,
+            CaracteristicaSeeder::class,    
+            HabitacionCaracteristicaSeeder::class,
         ]);
     }
 }

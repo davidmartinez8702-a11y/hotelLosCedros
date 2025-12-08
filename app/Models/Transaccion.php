@@ -13,6 +13,7 @@ class Transaccion extends Model
         'servicio_id',
         'platillo_id',
         'cantidad',
+        'estado',
     ];
     public function cuenta()
     {

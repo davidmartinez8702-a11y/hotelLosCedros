@@ -10,6 +10,7 @@ class TipoPago extends Model
     protected $table = 'tipo_pagos';
     protected $fillable = [
         'nombre',
+        'estado',
     ];
     public function facturas()
     {

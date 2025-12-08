@@ -11,9 +11,6 @@ class CategoriaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Categoria::query();
@@ -26,15 +23,20 @@ class CategoriaController extends Controller
             $query->where('estado', $request->estado);
         }
 
+        if ($request->filled('tipo') && $request->tipo !== 'todos') {
+            $query->where('tipo', $request->tipo);
+        }
+
         $categorias = $query->latest()->paginate(10)->through(fn($categoria) => [
             'id' => $categoria->id,
             'nombre' => $categoria->nombre,
             'estado' => $categoria->estado,
+            'tipo' => $categoria->tipo,
         ]);
 
         return Inertia::render('Categorias/CategoriasPage', [
             'categorias' => $categorias,
-            'filters' => $request->only(['search', 'estado']),
+            'filters' => $request->only(['search', 'estado', 'tipo']),
         ]);
     }
 
@@ -54,6 +56,7 @@ class CategoriaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255|unique:categorias',
             'estado' => 'required|in:activo,inactivo',
+            'tipo' => 'required|in:habitacion,platillo,servicio',
         ]);
 
         Categoria::create($validated);
@@ -68,7 +71,14 @@ class CategoriaController extends Controller
     public function show(Categoria $categoria)
     {
         return Inertia::render('Categorias/CategoriasShowPage', [
-            'categoria' => $categoria
+            'categoria' => [
+                'id' => $categoria->id,
+                'nombre' => $categoria->nombre,
+                'tipo' => $categoria->tipo,
+                'estado' => $categoria->estado,
+                'created_at' => $categoria->created_at->format('d/m/Y H:i'),
+                'updated_at' => $categoria->updated_at->format('d/m/Y H:i'),
+            ],
         ]);
     }
 
@@ -90,6 +100,7 @@ class CategoriaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255|unique:categorias,nombre,' . $categoria->id,
             'estado' => 'required|in:activo,inactivo',
+            'tipo' => 'required|in:habitacion,platillo,servicio',
         ]);
 
         $categoria->update($validated);

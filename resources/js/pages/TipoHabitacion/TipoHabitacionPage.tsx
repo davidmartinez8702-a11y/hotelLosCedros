@@ -16,6 +16,10 @@ import { SearchFilter } from "@/components/shared/SearchFilter";
 import { Plus, Eye, Pencil } from "lucide-react";
 import { route } from "ziggy-js";
 
+interface Categoria{
+    id: number;
+    nombre: string;
+}
 // --- Interfaces ---
 interface TipoHabitacion {
     id: number;
@@ -23,6 +27,12 @@ interface TipoHabitacion {
     estado: "activo" | "inactivo";
     precio: number;
     tipo: "habitacion" | "evento";
+    categoria: Categoria
+}
+
+interface Categoria {
+    id: number;
+    nombre: string;
 }
 
 interface Props {
@@ -35,10 +45,12 @@ interface Props {
         from: number;
         to: number;
     };
+    categorias: Categoria[];
     filters?: {
         search?: string;
         estado?: string;
         tipo?: string;
+        categoria_id?: string;
     };
 }
 
@@ -70,15 +82,16 @@ const formatCurrency = (amount: number): string => {
     }).format(amount);
 };
 
-export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: Props) {
+export default function TipoHabitacionPage({ tipoHabitaciones, categorias, filters = {} }: Props) {
     const [searchValue, setSearchValue] = useState(filters.search || "");
     const [estadoFilter, setEstadoFilter] = useState(filters.estado || "todos");
     const [tipoFilter, setTipoFilter] = useState(filters.tipo || "todos");
+    const [categoriaFilter, setCategoriaFilter] = useState(filters.categoria_id || "todos");
 
-    const handleSearch = (search: string, estado: string, tipo: string) => {
+    const handleSearch = (search: string, estado: string, tipo: string, categoria_id: string) => {
         router.get(
             route("tipo-habitacion.index"),
-            { search, estado, tipo },
+            { search, estado, tipo, categoria_id },
             { preserveState: true, replace: true }
         );
     };
@@ -86,7 +99,7 @@ export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: P
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchValue !== (filters.search || "")) {
-                handleSearch(searchValue, estadoFilter, tipoFilter);
+                handleSearch(searchValue, estadoFilter, tipoFilter, categoriaFilter);
             }
         }, 300);
 
@@ -95,12 +108,17 @@ export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: P
 
     const handleEstadoChange = (estado: string) => {
         setEstadoFilter(estado);
-        handleSearch(searchValue, estado, tipoFilter);
+        handleSearch(searchValue, estado, tipoFilter, categoriaFilter);
     };
 
     const handleTipoChange = (tipo: string) => {
         setTipoFilter(tipo);
-        handleSearch(searchValue, estadoFilter, tipo);
+        handleSearch(searchValue, estadoFilter, tipo, categoriaFilter);
+    };
+
+    const handleCategoriaChange = (categoria_id: string) => {
+        setCategoriaFilter(categoria_id);
+        handleSearch(searchValue, estadoFilter, tipoFilter, categoria_id);
     };
 
     const columns: Column<TipoHabitacion>[] = [
@@ -132,6 +150,11 @@ export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: P
                     {habitacion.tipo.charAt(0).toUpperCase() + habitacion.tipo.slice(1)}
                 </Badge>
             ),
+        },
+        {
+            key: "categoria",
+            label: "Categoría",
+            render: (habitacion) => <span>{habitacion.categoria.nombre}</span>,
         },
         {
             key: "actions",
@@ -205,6 +228,20 @@ export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: P
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <Select value={categoriaFilter} onValueChange={handleCategoriaChange}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Filtrar por categoría" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="todos">Todas las categorías</SelectItem>
+                                {categorias.map((categoria) => (
+                                    <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                                        {categoria.nombre}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </SearchFilter>
 
                     <DataTable
@@ -214,7 +251,7 @@ export default function TipoHabitacionPage({ tipoHabitaciones, filters = {} }: P
                         onPageChange={(page) => {
                             router.get(
                                 route("tipo-habitacion.index"),
-                                { page, search: searchValue, estado: estadoFilter, tipo: tipoFilter },
+                                { page, search: searchValue, estado: estadoFilter, tipo: tipoFilter, categoria_id: categoriaFilter },
                                 { preserveState: true }
                             );
                         }}

@@ -12,6 +12,7 @@ class Comentario extends Model
         'usuario_id',
         'contenido',
         'calificacion',
+        'estado',
     ];
     public function usuario()
     {

@@ -49,7 +49,7 @@ class ServicioController extends Controller
      */
     public function create()
     {
-        $categorias = Categoria::all(['id', 'nombre']);
+        $categorias = Categoria::where('tipo', 'servicio')->get(['id', 'nombre']);
         return inertia('Servicios/ServiciosCreatePage', [
             'categorias' => $categorias,
         ]);
@@ -103,7 +103,7 @@ class ServicioController extends Controller
     public function edit(Servicio $servicio)
     {
         //
-        $categorias = Categoria::where('estado', 'activo')->get(['id', 'nombre']);
+        $categorias = Categoria::where('estado', 'activo')->where('tipo','servicio')->get(['id', 'nombre']);
 
         return Inertia::render('Servicios/ServicioEdit', [
             'servicio' => $servicio,

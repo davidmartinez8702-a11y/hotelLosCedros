@@ -10,6 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { route } from "ziggy-js";
 
+interface Categoria {
+  id: number;
+  nombre: string;
+}
+
 interface TipoHabitacion {
   id: number;
   nombre: string;
@@ -20,13 +25,15 @@ interface TipoHabitacion {
   capacidad_total: number;
   precio: number;
   tipo: "habitacion" | "evento";
+  categoria_id: number;
 }
 
 interface Props {
   tipoHabitacion: TipoHabitacion;
+  categorias: Categoria[];
 }
 
-export default function TipoHabitacionPageEdit({ tipoHabitacion }: Props) {
+export default function TipoHabitacionPageEdit({ tipoHabitacion, categorias }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     nombre: tipoHabitacion.nombre,
     descripcion: tipoHabitacion.descripcion || "",
@@ -36,6 +43,7 @@ export default function TipoHabitacionPageEdit({ tipoHabitacion }: Props) {
     capacidad_total: tipoHabitacion.capacidad_total,
     precio: tipoHabitacion.precio,
     tipo: tipoHabitacion.tipo,
+    categoria_id: tipoHabitacion.categoria_id,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,6 +90,27 @@ export default function TipoHabitacionPageEdit({ tipoHabitacion }: Props) {
                     className={errors.nombre ? "border-red-500" : ""}
                   />
                   {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre}</p>}
+                </div>
+
+                {/* Categoría */}
+                <div>
+                  <Label htmlFor="categoria_id">Categoría</Label>
+                  <Select
+                    value={data.categoria_id.toString()}
+                    onValueChange={(value) => setData("categoria_id", parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((categoria) => (
+                        <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                          {categoria.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.categoria_id && <p className="text-red-500 text-sm">{errors.categoria_id}</p>}
                 </div>
 
                 {/* Tipo */}

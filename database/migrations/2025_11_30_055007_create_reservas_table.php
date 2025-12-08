@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('total_cantidad_adultos')->default(0);
             $table->integer('total_cantidad_infantes')->default(0);
             $table->date('fecha_reserva');
-            $table->string('dias_estadia');
+            $table->integer('dias_estadia');
             $table->string('estado')->default('pendiente');
             $table->string('tipo_reserva',100);
             $table->decimal('porcentaje_descuento',8,2)->default(0);

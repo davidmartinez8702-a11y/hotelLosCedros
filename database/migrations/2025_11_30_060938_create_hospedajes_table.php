@@ -15,8 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('reserva_id')->constrained('reservas');
             $table->foreignId('tipo_habitacion_id')->constrained('tipo_habitacions');
-            $table->integer('cantidad_adultos')->default(0);
-            $table->integer('cantidad_infantes')->default(0);
+            $table->integer('cantidad')->default(0);
             $table->timestamps();
         });
     }

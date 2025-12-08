@@ -13,17 +13,19 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Bed, UtensilsCrossed, ConciergeBell } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 interface Categoria {
     id: number;
     nombre: string;
+    tipo: 'habitacion' | 'platillo' | 'servicio';
     estado: 'activo' | 'inactivo';
 }
 
 interface CategoriaFormData {
     nombre: string;
+    tipo: string;
     estado: string;
 }
 
@@ -35,16 +37,17 @@ export default function CategoriasUpdatePage({ categoria }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Categorías',
-            href: '/categorias',
+            href: route('categorias.index'),
         },
         {
             title: 'Editar Categoría',
-            href: `/categorias/${categoria.id}/edit`,
+            href: route('categorias.show', categoria.id),
         },
     ];
 
     const { data, setData, put, processing, errors } = useForm<CategoriaFormData>({
         nombre: categoria.nombre,
+        tipo: categoria.tipo,
         estado: categoria.estado,
     });
 
@@ -92,11 +95,49 @@ export default function CategoriasUpdatePage({ categoria }: Props) {
                                             id="nombre"
                                             value={data.nombre}
                                             onChange={(e) => setData('nombre', e.target.value)}
-                                            placeholder="Ej: Bebidas"
+                                            placeholder="Ej: Bebidas, Suite, Spa"
                                             required
                                         />
                                         {errors.nombre && (
                                             <p className="text-sm text-destructive">{errors.nombre}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Tipo */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tipo">
+                                            Tipo <span className="text-destructive">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.tipo}
+                                            onValueChange={(value) => setData('tipo', value)}
+                                        >
+                                            <SelectTrigger id="tipo">
+                                                <SelectValue placeholder="Seleccionar tipo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="habitacion">
+                                                    <span className="flex items-center gap-2">
+                                                        <Bed className="h-4 w-4 text-blue-600" />
+                                                        Habitación
+                                                    </span>
+                                                </SelectItem>
+                                                <SelectItem value="platillo">
+                                                    <span className="flex items-center gap-2">
+                                                        <UtensilsCrossed className="h-4 w-4 text-orange-600" />
+                                                        Platillo
+                                                    </span>
+                                                </SelectItem>
+                                                <SelectItem value="servicio">
+                                                    <span className="flex items-center gap-2">
+                                                        <ConciergeBell className="h-4 w-4 text-purple-600" />
+                                                        Servicio
+                                                    </span>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.tipo && (
+                                            <p className="text-sm text-destructive">{errors.tipo}</p>
                                         )}
                                     </div>
 

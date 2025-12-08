@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('cuenta_id')->constrained('cuentas');
             $table->foreignId('servicio_id')->constrained('servicios')->nullable();
             $table->foreignId('platillo_id')->constrained('platillos')->nullable();
+            $table->string('estado')->default('pendiente');
             $table->integer('cantidad');
             $table->timestamps();
         });

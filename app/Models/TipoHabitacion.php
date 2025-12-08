@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TipoHabitacion extends Model
 {
@@ -17,6 +18,7 @@ class TipoHabitacion extends Model
         'capacidad_infantes',
         'precio',
         'capacidad_total',
+        'categoria_id',
         'tipo',
     ];
     public function imagenes():MorphMany
@@ -39,4 +41,10 @@ class TipoHabitacion extends Model
     {
         return $this->hasMany(Hospedaje::class);
     }
+    public function categoria(){
+        return $this->belongsTo(Categoria::class,'categoria_id');
+    }
+    
+
+    
 }

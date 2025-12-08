@@ -8,6 +8,11 @@ import { Pencil, Image } from "lucide-react"; // Icono para la galería
 import { route } from "ziggy-js";
 import EntityHeader from "@/shared/components/EntityHeader";
 
+interface Categoria {
+  id: number;
+  nombre: string;
+}
+
 interface TipoHabitacion {
   id: number;
   nombre: string;
@@ -18,6 +23,7 @@ interface TipoHabitacion {
   capacidad_total: number;
   precio: number;
   tipo: "habitacion" | "evento";
+  categoria: Categoria;
   created_at: string;
   updated_at: string;
 }
@@ -47,7 +53,7 @@ export default function TipoHabitacionShow({ tipoHabitacion }: Props) {
             />
             
             <div className="flex gap-2">
-              <Link href={route("tipo-habitacion.show", tipoHabitacion.id)}>
+              <Link href={route("tipo-habitacion.edit", tipoHabitacion.id)}>
                 <Button>
                   <Pencil className="mr-2 h-4 w-4" />
                   Editar
@@ -126,6 +132,11 @@ export default function TipoHabitacionShow({ tipoHabitacion }: Props) {
                     <p className="text-muted-foreground">{tipoHabitacion.capacidad_total}</p>
                   </div>
                 )}
+
+                <div>
+                  <h2 className="text-lg font-semibold">Categoría</h2>
+                  <p className="text-muted-foreground">{tipoHabitacion.categoria.nombre}</p>
+                </div>
 
                 <div>
                   <h2 className="text-lg font-semibold">Creado el</h2>

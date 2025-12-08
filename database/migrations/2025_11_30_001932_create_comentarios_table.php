@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('comentarios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('usuario_id')->constrained('users');
-            $table->string('contenido');
+            $table->string('contenido')->nullable();
             $table->integer('calificacion')->default(0);
+            $table->string('estado')->default('visible');
             $table->timestamps();
         });
     }

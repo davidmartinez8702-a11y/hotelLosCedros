@@ -11,8 +11,7 @@ class Hospedaje extends Model
     protected $fillable = [
         'reserva_id',
         'tipo_habitacion_id',
-        'cantidad_adultos',
-        'cantidad_infantes',
+        'cantidad'
     ];
     public function reserva()
     {

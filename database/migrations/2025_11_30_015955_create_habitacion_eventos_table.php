@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tipo_habitacion_id')->constrained('tipo_habitacions');
             $table->string('nombre');
-            $table->integer('codigo');
+            $table->string('codigo');
             $table->string('estado')->default('activo');
             $table->timestamps();
         });

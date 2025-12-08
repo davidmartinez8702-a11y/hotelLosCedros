@@ -10,7 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { route } from "ziggy-js";
 
-export default function TipoHabitacionPageCreate() {
+interface Categoria {
+  id: number;
+  nombre: string;
+}
+
+interface Props {
+  categorias: Categoria[];
+}
+
+export default function TipoHabitacionPageCreate({ categorias }: Props) {
   const { data, setData, post, processing, errors } = useForm({
     nombre: "",
     descripcion: "",
@@ -20,6 +29,7 @@ export default function TipoHabitacionPageCreate() {
     capacidad_total: 0,
     precio: 0,
     tipo: "habitacion", // Por defecto es "habitacion"
+    categoria_id: "", // Nueva propiedad para la categoría
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -65,6 +75,27 @@ export default function TipoHabitacionPageCreate() {
                     className={errors.nombre ? "border-red-500" : ""}
                   />
                   {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre}</p>}
+                </div>
+
+                {/* Categoría */}
+                <div>
+                  <Label htmlFor="categoria_id">Categoría</Label>
+                  <Select
+                    value={data.categoria_id}
+                    onValueChange={(value) => setData("categoria_id", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((categoria) => (
+                        <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                          {categoria.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.categoria_id && <p className="text-red-500 text-sm">{errors.categoria_id}</p>}
                 </div>
 
                 {/* Tipo */}

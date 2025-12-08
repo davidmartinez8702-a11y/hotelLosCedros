@@ -54,7 +54,7 @@ class PlatilloController extends Controller
     public function create()
     {
         //
-        $categorias = Categoria::all(['id', 'nombre']);
+        $categorias = Categoria::where('tipo', 'platillo')->get(['id', 'nombre']);
 
 
         return Inertia::render('Platillos/PlatillosCreatePage', [
@@ -123,7 +123,7 @@ class PlatilloController extends Controller
     public function edit(Platillo $platillo)
     {
         //
-        $categorias = Categoria::all(['id', 'nombre']);
+        $categorias = Categoria::where('tipo', 'platillo')->get(['id', 'nombre']);
 
 
         return Inertia::render('Platillos/PlatilloEdit', [

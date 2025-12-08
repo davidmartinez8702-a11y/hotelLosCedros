@@ -3,20 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HabitacionCaracteristica extends Model
 {
-    //
     protected $table = 'habitacion_caracteristicas';
+
     protected $fillable = [
         'tipo_habitacion_id',
         'caracteristica_id',
     ];
-    public function tipoHabitacion()
+
+    /**
+     * Relación con TipoHabitacion
+     */
+    public function tipoHabitacion(): BelongsTo
     {
         return $this->belongsTo(TipoHabitacion::class);
     }
-    public function caracteristica()
+
+    /**
+     * Relación con Caracteristica
+     */
+    public function caracteristica(): BelongsTo
     {
         return $this->belongsTo(Caracteristica::class);
     }
