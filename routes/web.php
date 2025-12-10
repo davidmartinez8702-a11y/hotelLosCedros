@@ -11,6 +11,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\TipoHabitacionController;
 use App\Http\Controllers\PrediccionController;
+use App\Http\Controllers\Recepcion\ReservaRecepcionController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\CheckinController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -130,6 +133,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 Route::get('/api/bi/evolucion-servicios', [BIController::class, 'getEvolucionServicios'])->name('bi.api.evolucion-servicios');
 Route::get('/api/bi/uso-servicios', [BIController::class, 'getUsoServicios'])->name('bi.api.uso-servicios');
+
+// Rutas de Recepción
+Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(function () {
+    // Rutas de Reservas
+    Route::get('/', [ReservaController::class, 'index'])->name('reservas.index');
+    Route::get('/reservas/create', [ReservaController::class, 'create'])->name('reservas.create');
+    Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])->name('reservas.show');
+    Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
+
+    // Rutas de Check-ins
+    Route::get('/checkins', [CheckinController::class, 'index'])->name('checkins.index');
+    Route::get('/checkins/create', [CheckinController::class, 'create'])->name('checkins.create');
+    Route::get('/checkins/{checkin}', [CheckinController::class, 'show'])->name('checkins.show');
+    Route::get('/checkins/{checkin}/edit', [CheckinController::class, 'edit'])->name('checkins.edit');
+    Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
+    Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
+});
+
+// Rutas para recepción de reservas
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reservas/recepcion', [ReservaRecepcionController::class, 'index'])->name('reservas.recepcion.index');
+    Route::post('/reservas/recepcion/{reserva}/factura', [ReservaRecepcionController::class, 'crearFactura'])->name('reservas.recepcion.crearFactura');
+});
 
 //rutas agrupadas
 // Route::middleware(['auth','verified'])->group(function(){

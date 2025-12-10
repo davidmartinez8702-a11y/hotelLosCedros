@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon, BookPlus, ClipboardCheck } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -89,6 +89,16 @@ const mainNavItems: NavItem[] = [
         icon:DnaIcon,
     },
 
+    {
+        title:'Reservas',
+        href:route('recepcion.reservas.index'),
+        icon:BookPlus,
+    },
+    {
+        title:'Check-in',
+        href:route('recepcion.checkins.index'),
+        icon:ClipboardCheck,
+    },
     {
         title: 'Configuracion',
         href: configuracion.index(),
