@@ -194,3 +194,38 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/predicciones/reporte', [PrediccionController::class, 'generarReporte'])
         ->name('predicciones.reporte');
 });
+
+use App\Http\Controllers\ClasificacionClienteController;
+
+Route::middleware(['auth'])->group(function () {
+    // Vista K-means
+    Route::get('/kmeans', function () {
+        return Inertia::render('Kmeans/KmeansPage');
+    })->name('kmeans.index');
+
+    // ✅ Validar datos suficientes
+    Route::get('/kmeans/validar', [ClasificacionClienteController::class, 'validarDatosSuficientes'])
+        ->name('kmeans.validar');
+    
+    // ✅ Clasificar UN cliente
+    Route::post('/clientes/{id}/clasificar', [ClasificacionClienteController::class, 'clasificarCliente'])
+        ->name('clientes.clasificar');
+    
+    // ✅ Clasificar MÚLTIPLES clientes (usa /api/clustering/classify-all)
+    Route::post('/clientes/clasificar-lote', [ClasificacionClienteController::class, 'clasificarClientesEnLote'])
+        ->name('clientes.clasificar.lote');
+    
+    // ✅ Ver clasificaciones guardadas
+    Route::get('/clientes/clasificaciones', [ClasificacionClienteController::class, 'verClasificacionesGuardadas'])
+        ->name('clientes.clasificaciones');
+    
+    // ✅ Estadísticas
+    Route::get('/kmeans/estadisticas', [ClasificacionClienteController::class, 'estadisticas'])
+        ->name('kmeans.estadisticas');
+
+    Route::get('/kmeans/test-hardcoded', [ClasificacionClienteController::class, 'probarConDatosHardcodeados'])
+        ->name('kmeans.test.hardcoded');
+    
+    Route::get('/kmeans/logs', [ClasificacionClienteController::class, 'verLogs'])
+        ->name('kmeans.logs');
+});

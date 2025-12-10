@@ -82,7 +82,8 @@
         "typescript": "^5.7.2",
         "vaul": "^1.1.2",
         "vite": "^7.0.4",
-        "ziggy-js": "^2.6.0"
+        "ziggy-js": "^2.6.0",
+        "zustand": "^5.0.9"
     },
     "optionalDependencies": {
         "@rollup/rollup-linux-x64-gnu": "4.9.5",

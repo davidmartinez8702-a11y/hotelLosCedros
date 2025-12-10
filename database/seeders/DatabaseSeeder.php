@@ -27,10 +27,12 @@ class DatabaseSeeder extends Seeder
             ComentarioSeeder::class,
             CaracteristicaSeeder::class,    
             HabitacionCaracteristicaSeeder::class,
+            ClienteSeeder::class,  
             TipoPagoSeeder::class,
             ReservaSeeder::class,
             CheckinSeeder::class,
             CuentaSeeder::class,
+            SegmentoSeeder::class,
         ]);
     }
 }

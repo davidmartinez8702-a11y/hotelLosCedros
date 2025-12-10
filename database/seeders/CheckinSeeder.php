@@ -112,7 +112,7 @@ class CheckinSeeder extends Seeder
                             }
 
                             // Seleccionar un cliente aleatorio de los asistentes
-                            $clienteId = $asistentes->pop();
+                            $clienteId = $asistentes->random();
 
                             $checkins[] = Checkin::create([
                                 'reserva_id' => $reserva->id,
