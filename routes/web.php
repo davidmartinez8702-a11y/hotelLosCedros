@@ -203,23 +203,23 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('Kmeans/KmeansPage');
     })->name('kmeans.index');
 
-    // ✅ Validar datos suficientes
+    
     Route::get('/kmeans/validar', [ClasificacionClienteController::class, 'validarDatosSuficientes'])
         ->name('kmeans.validar');
     
-    // ✅ Clasificar UN cliente
+    
     Route::post('/clientes/{id}/clasificar', [ClasificacionClienteController::class, 'clasificarCliente'])
         ->name('clientes.clasificar');
     
-    // ✅ Clasificar MÚLTIPLES clientes (usa /api/clustering/classify-all)
+    
     Route::post('/clientes/clasificar-lote', [ClasificacionClienteController::class, 'clasificarClientesEnLote'])
         ->name('clientes.clasificar.lote');
     
-    // ✅ Ver clasificaciones guardadas
+    
     Route::get('/clientes/clasificaciones', [ClasificacionClienteController::class, 'verClasificacionesGuardadas'])
         ->name('clientes.clasificaciones');
     
-    // ✅ Estadísticas
+    
     Route::get('/kmeans/estadisticas', [ClasificacionClienteController::class, 'estadisticas'])
         ->name('kmeans.estadisticas');
 
