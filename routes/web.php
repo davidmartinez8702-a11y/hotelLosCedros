@@ -14,6 +14,7 @@ use App\Http\Controllers\PrediccionController;
 use App\Http\Controllers\Recepcion\ReservaRecepcionController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\CuentaController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -150,12 +151,23 @@ Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(func
     Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
     Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
 });
+Route::prefix('cuentas')->name('cuentas.')->group(function () {
+    Route::get('/', [CuentaController::class, 'index'])->name('index');
+    Route::get('/create', [CuentaController::class, 'create'])->name('create');
+    Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
+    Route::post('/', [CuentaController::class, 'store'])->name('store');
+    // Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
+    
+    // Rutas adicionales
+    Route::post('/{cuenta}/transacciones', [CuentaController::class, 'agregarTransacciones'])->name('transacciones.agregar');
+    Route::delete('/{cuenta}/transacciones/{transaccion}', [CuentaController::class, 'eliminarTransaccion'])->name('transacciones.eliminar');
+});
 
 // Rutas para recepción de reservas
-Route::middleware(['auth'])->group(function () {
-    Route::get('/reservas/recepcion', [ReservaRecepcionController::class, 'index'])->name('reservas.recepcion.index');
-    Route::post('/reservas/recepcion/{reserva}/factura', [ReservaRecepcionController::class, 'crearFactura'])->name('reservas.recepcion.crearFactura');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/reservas/recepcion', [ReservaRecepcionController::class, 'index'])->name('reservas.recepcion.index');
+//     //Route::post('/reservas/recepcion/{reserva}/factura', [ReservaRecepcionController::class, 'crearFactura'])->name('reservas.recepcion.crearFactura');
+// });
 
 //rutas agrupadas
 // Route::middleware(['auth','verified'])->group(function(){

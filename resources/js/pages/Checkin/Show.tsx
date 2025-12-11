@@ -157,7 +157,7 @@ export default function CheckinShow({ checkin }: Props) {
                                 </Link>
                             )}
                             {tieneCuenta && (
-                                <Link href={route("recepcion.checkins.show", checkin.cuenta!.id)}>
+                                <Link href={route("cuentas.show", checkin.cuenta!.id)}>
                                     <Button variant="secondary">
                                         <Receipt className="mr-2 h-4 w-4" />
                                         Ver Cuenta
