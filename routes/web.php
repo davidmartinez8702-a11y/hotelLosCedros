@@ -156,11 +156,12 @@ Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(func
 
     // Rutas de Check-ins
     Route::get('/checkins', [CheckinController::class, 'index'])->name('checkins.index');
-    Route::get('/checkins/create', [CheckinController::class, 'create'])->name('checkins.create');
+    Route::get('/{reserva}/checkins/create', [CheckinController::class, 'createCheckinMedianteReserva'])->name('checkins.create');
     Route::get('/checkins/{checkin}', [CheckinController::class, 'show'])->name('checkins.show');
     Route::get('/checkins/{checkin}/edit', [CheckinController::class, 'edit'])->name('checkins.edit');
-    Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
+    // Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
     Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
+    Route::post('/checkins/{reserva}/store', [CheckinController::class, 'store'])->name('checkins.store');
 });
 Route::prefix('cuentas')->name('cuentas.')->group(function () {
     Route::get('/', [CuentaController::class, 'index'])->name('index');
@@ -173,6 +174,9 @@ Route::prefix('cuentas')->name('cuentas.')->group(function () {
     Route::post('/{cuenta}/transacciones', [CuentaController::class, 'agregarTransacciones'])->name('transacciones.agregar');
     Route::delete('/{cuenta}/transacciones/{transaccion}', [CuentaController::class, 'eliminarTransaccion'])->name('transacciones.eliminar');
 });
+
+// En tu archivo de rutas (dentro del grupo 'recepcion')
+Route::get('/clientes/search', [CheckinController::class, 'searchClientes'])->name('clientes.search');
 
 // Rutas para recepción de reservas
 // Route::middleware(['auth'])->group(function () {

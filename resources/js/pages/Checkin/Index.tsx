@@ -330,12 +330,12 @@ export default function CheckinIndex({ checkins, clientes, filters = {} }: Props
                                 Gestiona los registros de entrada y salida de huéspedes.
                             </p>
                         </div>
-                        <Link href={route('recepcion.checkins.create')}>
+                        {/* <Link href={route('recepcion.checkins.create')}>
                             <Button className="w-full sm:w-auto">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Nuevo Check-in
                             </Button>
-                        </Link>
+                        </Link> */}
                     </div>
 
                     {/* Filtros */}

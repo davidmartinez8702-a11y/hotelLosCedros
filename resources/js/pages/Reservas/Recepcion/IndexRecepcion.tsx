@@ -13,7 +13,7 @@ import { DataTable, Column } from '@/components/shared/DataTable';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { SearchFilter } from '@/components/shared/SearchFilter';
-import { Plus, Eye, Pencil, Calendar, Users, Plane, Briefcase, Heart, PartyPopper } from 'lucide-react';
+import { Plus, Eye, Pencil, Calendar, Users, Plane, Briefcase, Heart, PartyPopper, DoorOpen } from 'lucide-react';
 import { route } from 'ziggy-js';
 
 // --- Interfaces ---
@@ -198,6 +198,10 @@ export default function IndexRecepcion({ reservas, filters = {} }: Props) {
         handleSearch(searchValue, estadoFilter, tipoReservaFilter, tipo);
     };
 
+    const canCheckin = (estado: Reserva['estado']): boolean => {
+        return ['pendiente', 'confirmada', 'en_curso'].includes(estado);
+    };
+
     const columns: Column<Reserva>[] = [
         { 
             key: 'id', 
@@ -301,6 +305,20 @@ export default function IndexRecepcion({ reservas, filters = {} }: Props) {
             className: 'w-[100px] text-right',
             render: (reserva) => (
                 <div className="flex gap-2 justify-end">
+                    {/* Botón de Check-in */}
+                    {canCheckin(reserva.estado) && (
+                        <Link 
+                            // La nueva ruta para iniciar el check-in, pasando el ID de la reserva
+                            href={route('recepcion.checkins.create', { reserva: reserva.id })} 
+                            title="Crear Check-in"
+                        >
+                            {/* Se puede usar DoorOpen o un icono de llave */}
+                            <Button variant="ghost" size="sm" title='agregar checkin'>
+                                +<DoorOpen className="h-4 w-4 mr-1" />
+                                
+                            </Button>
+                        </Link>
+                    )}
                     <Link href={route('recepcion.reservas.show', reserva.id)}>
                         <Button variant="ghost" size="sm" title="Ver Detalle">
                             <Eye className="h-4 w-4" />

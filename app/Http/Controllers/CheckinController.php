@@ -6,7 +6,11 @@ use App\Models\Checkin;
 use App\Models\Cliente;
 use App\Models\HabitacionEvento;
 use App\Models\Recepcionista;
+use App\Models\Reserva;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CheckinController extends Controller
@@ -94,12 +98,292 @@ class CheckinController extends Controller
         //
     }
 
+   public function createCheckinMedianteReserva(Reserva $reserva, Request $request)
+    {
+        // 1. Cargar la Reserva y Cliente Principal
+        $reserva->load(['cliente.usuario', 'hospedajes.tipoHabitacion','checkins.habitacionEvento.tipoHabitacion']);
+        
+        $clientesReserva = collect();
+        $clientePrincipalId = null;
+        $clienteQueRealizoLaReserva = null;
+        if ($reserva->cliente) {
+            $clientePrincipalId = $reserva->cliente->id; // Guarda el ID del cliente principal
+            
+            $clienteQueRealizoLaReserva = [
+                'id' => $reserva->cliente->id,
+                'nombre' => $reserva->cliente->usuario->name,
+                'email' => $reserva->cliente->usuario->email,
+                'is_principal' => true,         
+            ];    
+        }
+        $clientesDeCheckin = $reserva->checkins->pluck('cliente_id')->toArray();
+        // 2. Obtener lista paginada de clientes disponibles (Excluyendo al principal)
+        
+        // Determinar qué cliente excluir
+        // $excluirIds = $clientesReserva->pluck('id')->toArray();
+        $excluirIds = $clientesDeCheckin;
+        // Filtro de búsqueda opcional desde el frontend (si el recepcionista teclea en el input y se envía un GET)
+        $search = $request->input('search');
+
+        $clientesDisponiblesQuery = Cliente::with('usuario')
+            ->whereHas('usuario');
+
+        // Excluir al cliente principal y otros que ya estén en la bolsa
+        // $clientesDisponiblesQuery->whereNotIn('id', $excluirIds);
+
+        // Si se envía un término de búsqueda paginado (ej. el recepcionista teclea y se hace un router.get)
+        if ($search) {
+             $clientesDisponiblesQuery->whereHas('usuario', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('telefono', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($excluirIds)) {
+            $clientesDisponiblesQuery->whereNotIn('id', $excluirIds);
+        }
+        // Obtener la paginación de clientes
+        $clientesDisponibles = $clientesDisponiblesQuery
+            ->latest('id')
+            ->paginate(5) // 10 por página, controlado por el frontend
+            ->through(fn($cliente) => [
+                'id' => $cliente->id,
+                'nombre' => $cliente->usuario->name,
+                'email' => $cliente->usuario->email,
+                'telefono' => $cliente->usuario->telefono,
+            ]);
+        
+        // 3. Obtener Habitaciones y Recepcionistas (como lo tenías)
+        $habitacionesDisponibles = HabitacionEvento::with('tipoHabitacion')
+            ->where('estado', 'disponible')
+            ->get()
+            ->map(fn($hab) => [
+                'id' => $hab->id,
+                'codigo' => $hab->codigo,
+                'nombre' => $hab->nombre,
+                'tipo' => $hab->tipoHabitacion->tipo,
+                'tipo_nombre' => $hab->tipoHabitacion->nombre,
+                'capacidad_adultos' => $hab->tipoHabitacion->capacidad_adultos,
+                'capacidad_infantil' => $hab->tipoHabitacion->capacidad_infantes,
+                'capacidad_total' => $hab->tipoHabitacion->capacidad_total,
+            ]);
+        
+        $recepcionistas = Recepcionista::with('usuario')
+            ->whereHas('usuario')
+            ->get()
+            ->map(fn($recep) => [
+                'id' => $recep->id,
+                'nombre' => $recep->usuario->name,
+            ]);
+
+        // 4. Calcular habitaciones solicitadas
+        $habitacionesSolicitadas = $reserva?->hospedajes
+            ?->map(fn($hospedaje) => [
+                'tipo_id' => $hospedaje->tipoHabitacion->id,
+                'nombre_tipo' => $hospedaje->tipoHabitacion->nombre,
+                'cantidad' => $hospedaje->cantidad ?? 1, 
+                'tipo_reserva' => $hospedaje->tipoHabitacion->tipo,
+            ])
+            ->groupBy('tipo_id')
+            ->map(function ($items, $tipo_id) {
+                return [
+                    'tipo_id' => $tipo_id,
+                    'nombre_tipo' => $items->first()['nombre_tipo'],
+                    'tipo_reserva' => $items->first()['tipo_reserva'],
+                    'total_solicitado' => $items->sum('cantidad'),
+                ];
+            })
+            ->values();
+        $habitacionesAsignadas = $reserva->checkins
+        // Agrupamos la colección de checkins directamente por la habitación asignada
+            ->groupBy('habitacion_evento_id') 
+            ->map(function ($checkinsPorHabitacion, $habitacion_evento_id) {
+                
+                $firstCheckin = $checkinsPorHabitacion->first();
+                $habitacionEvento = $firstCheckin->habitacionEvento;
+
+                return [
+                    'habitacion_evento_id' => $habitacion_evento_id,
+                    'codigo' => $habitacionEvento->codigo,
+                    'tipo_nombre' => $habitacionEvento->tipoHabitacion->nombre,
+                    'estado_actual' => $habitacionEvento->estado,
+                    
+                    // LISTA DE HUESPEDES ASIGNADOS A ESTA HABITACIÓN
+                    'huespedes_asignados' => $checkinsPorHabitacion->map(fn($checkin) => [
+                        'checkin_id' => $checkin->id,
+                        'cliente_id' => $checkin->cliente_id,
+                        'nombre' => $checkin->cliente->usuario->name,
+                        'email' => $checkin->cliente->usuario->email,
+                    ])->toArray(),
+                    
+                    'num_huespedes_activos' => $checkinsPorHabitacion->count(),
+                ];
+            })
+            ->values();
+
+        // 5. Retornar a la vista de creación
+        return Inertia::render('Checkin/CreateCheckin', [
+            'reserva' => [
+                'id' => $reserva->id,
+                'tipo_reserva' => $reserva->tipo_reserva,
+                'fecha_reserva' => $reserva->fecha_reserva,
+                'tipo_viaje' => $reserva->tipo_viaje,
+            ],
+            'clientesIniciales' => $clientesReserva,
+            'clientesDisponibles' => $clientesDisponibles, // Nueva lista paginada
+            'habitacionesDisponibles' => $habitacionesDisponibles,
+            'recepcionistas' => $recepcionistas,
+            'habitacionesSolicitadas' => $habitacionesSolicitadas,
+            'habitacionesAsignadas' => $habitacionesAsignadas,
+            'clienteQueRealizoLaReserva' => $clienteQueRealizoLaReserva,
+        ]);
+    }
+
+    public function updateHabitacionEstado(Request $request)
+    {
+        // Validar el formato del array de cambios
+        $validated = $request->validate([
+            'estados' => 'required|array',
+            'estados.*' => 'required|in:activo,ocupado,limpieza,mantenimiento,inactivo',
+            'estados.*' => 'required|exists:habitacion_eventos,id', // Se valida que la clave sea un ID existente
+        ]);
+
+        // Usar transacción para el cambio masivo
+        DB::beginTransaction();
+        
+        try {
+            foreach ($validated['estados'] as $habitacionId => $nuevoEstado) {
+                HabitacionEvento::where('id', $habitacionId)
+                    ->update(['estado' => $nuevoEstado]);
+            }
+            
+            DB::commit();
+
+            // Redirigir de vuelta o retornar una respuesta de éxito
+            return back()->with('success', 'Estados de habitaciones actualizados correctamente.');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['general' => 'Error al actualizar los estados: ' . $e->getMessage()]);
+        }
+    }
+
+    public function searchClientes(Request $request)
+    {
+        $search = $request->input('search');
+
+        $clientes = Cliente::query()
+            ->with('usuario')
+            ->when($search, function ($query, $search) {
+                $query->whereHas('usuario', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('telefono', 'like', "%{$search}%");
+                });
+            })
+            ->limit(10) // Limita para no sobrecargar el resultado dinámico
+            ->get()
+            ->map(fn($cliente) => [
+                'id' => $cliente->id,
+                'nombre' => $cliente->usuario->name,
+                'email' => $cliente->usuario->email,
+                'telefono' => $cliente->usuario->telefono,
+            ]);
+
+        // Devolvemos la data directamente como JSON
+        return response()->json(['data' => $clientes]);
+    }
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public final function store(Reserva $reserva, Request $request)
     {
-        //
+        // El ID de la reserva viene de la inyección de modelo en la URL
+        $reservaId = $reserva->id;
+        // dd($request->all());
+        // 1. Validación de los datos
+        $validated = $request->validate([
+                
+                'reserva_id' => ['nullable', Rule::in([$reservaId])],
+                
+                'recepcionista_id' => 'required|exists:recepcionistas,id',
+                
+                'checkins' => 'required|array|min:1',
+                
+                
+                'checkins.*.cliente_id' => 'required|exists:clientes,id', 
+                
+                'checkins.*.habitacion_evento_id' => [
+                    'required',
+                    'exists:habitacion_eventos,id',
+                    
+                    // ⚠️ ALERTA: Si la dejas desactivada, se asignarán habitaciones OCUPADAS.
+                    // Rule::exists('habitacion_eventos', 'id')->where(function ($query) {
+                    //     return $query->where('estado', 'activo');
+                    // }),
+                ],
+                
+                
+                'checkins.*.fecha_entrada' => 'required|date',
+                'checkins.*.fecha_salida' => 'nullable|date|after_or_equal:checkins.*.fecha_entrada',
+            ], [
+                'checkins.required' => 'Debe haber al menos un huésped para registrar el check-in.',
+                'checkins.*.habitacion_evento_id.exists' => 'Una o más habitaciones seleccionadas no existen.',
+                'checkins.*.cliente_id.required' => 'Falta el ID del cliente para uno o más huéspedes.', // Nuevo mensaje de diagnóstico
+            ]);
+                    
+
+        // 2. Ejecutar la creación y actualización dentro de una Transacción
+        try {
+            DB::beginTransaction();
+            
+
+            $checkinIds = [];
+
+            foreach ($validated['checkins'] as $data) {
+                // Crear el Check-in, usando el $reservaId de la URL inyectada
+                $checkin = Checkin::create([
+                    'reserva_id' => $reservaId, // Usamos el ID de la reserva inyectada
+                    'recepcionista_id' => $validated['recepcionista_id'],
+                    'cliente_id' => $data['cliente_id'],
+                    'habitacion_evento_id' => $data['habitacion_evento_id'],
+                    'fecha_entrada' => $data['fecha_entrada'],
+                    'fecha_salida' => $data['fecha_salida'] ?? null,
+                ]);
+                $checkinIds[] = $checkin->id;
+
+                // 3. Actualizar el estado de la Habitación
+                // Si no tiene fecha de salida, la habitación pasa a 'ocupado'
+                // if (!$checkin->fecha_salida) {
+                //     HabitacionEvento::where('id', $data['habitacion_evento_id'])
+                //         ->update(['estado' => 'ocupado']);
+                // }
+            }
+            
+            // 4. Actualizar el estado de la Reserva principal
+            $reserva->update(['estado' => 'confirmada']);
+
+            DB::commit();
+
+            // 5. Redirección
+            // if (count($checkinIds) === 1) {
+            //      return redirect()->route('recepcion.checkins.show', $checkinIds[0])
+            //         ->with('success', 'Check-in registrado correctamente.');
+            // } else {
+            //      return redirect()->route('recepcion.checkins.index')
+            //         ->with('success', count($checkinIds) . ' Check-ins registrados correctamente.');
+            // }
+            return redirect()->back()
+                ->with('success', 'Check-in registrado correctamente.');
+
+        } catch (Exception $e) {
+            // dd($e->getMessage());
+            DB::rollBack();
+            // Manejo de errores (muestra el error general a Inertia)
+            return back()->withErrors(['general' => 'Error al registrar los check-ins. Detalle: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     /**

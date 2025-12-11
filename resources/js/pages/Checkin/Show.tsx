@@ -148,14 +148,14 @@ export default function CheckinShow({ checkin }: Props) {
                                     Editar
                                 </Button>
                             </Link>
-                            {!tieneCuenta && (
+                            {/* {!tieneCuenta && (
                                 <Link href={route("recepcion.checkins.create", { checkin_id: checkin.id })}>
                                     <Button>
                                         <Receipt className="mr-2 h-4 w-4" />
                                         Crear Cuenta
                                     </Button>
                                 </Link>
-                            )}
+                            )} */}
                             {tieneCuenta && (
                                 <Link href={route("cuentas.show", checkin.cuenta!.id)}>
                                     <Button variant="secondary">
@@ -430,14 +430,14 @@ export default function CheckinShow({ checkin }: Props) {
                                 Editar Check-in
                             </Button>
                         </Link>
-                        {!tieneCuenta && (
+                        {/* {!tieneCuenta && (
                             <Link href={route("recepcion.cuentas.create", { checkin_id: checkin.id })}>
                                 <Button>
                                     <Receipt className="mr-2 h-4 w-4" />
                                     Crear Cuenta
                                 </Button>
                             </Link>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>
