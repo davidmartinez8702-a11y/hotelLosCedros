@@ -1,15 +1,28 @@
 import React, { useState, FormEvent } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout'; // ✅ CAMBIO AQUÍ
+import AppLayout from '@/layouts/app-layout';
+import type { BreadcrumbItem } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-    PlusIcon, 
-    TrashIcon,
-    ArrowLeftIcon,
-} from '@heroicons/react/24/outline';
+    Plus, 
+    Trash2,
+    ArrowLeft,
+    AlertCircle,
+    X,
+} from 'lucide-react';
 
 interface Segmento {
     id: number;
     nombre: string;
+    descripcion?: string;
 }
 
 interface TipoHabitacion {
@@ -49,7 +62,13 @@ interface Props {
     platillos: Platillo[];
 }
 
-export default function Create({ segmentos, tiposHabitacion, servicios, platillos }: Props) {
+export default function PromoCreate({ segmentos, tiposHabitacion, servicios, platillos }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Promociones', href: '/promos' },
+        { title: 'Crear', href: '/promos/create' },
+    ];
+
     const { data, setData, post, processing, errors } = useForm({
         nombre: '',
         descripcion: '',
@@ -59,7 +78,8 @@ export default function Create({ segmentos, tiposHabitacion, servicios, platillo
         descuento_monto: null as number | null,
         precio_total_paquete: null as number | null,
         precio_normal: null as number | null,
-        segmento_id: null as number | null,
+        segmentos_ids: [] as number[],
+        aplica_todos_segmentos: true,
         aplica_a: 'todos' as 'todos' | 'nuevos' | 'registrados',
         estado: 'activa' as 'activa' | 'pausada' | 'finalizada',
         fecha_inicio: '',
@@ -79,8 +99,38 @@ export default function Create({ segmentos, tiposHabitacion, servicios, platillo
         detalles: [] as Detalle[],
     });
 
-    const [itemsDisponibles, setItemsDisponibles] = useState<any[]>([]);
     const [tipoItemSeleccionado, setTipoItemSeleccionado] = useState<'habitacion' | 'servicio' | 'platillo'>('habitacion');
+    const [busquedaSegmento, setBusquedaSegmento] = useState('');
+
+    const diasSemanaOpciones = [
+        { value: 'lunes', label: 'Lunes' },
+        { value: 'martes', label: 'Martes' },
+        { value: 'miercoles', label: 'Miércoles' },
+        { value: 'jueves', label: 'Jueves' },
+        { value: 'viernes', label: 'Viernes' },
+        { value: 'sabado', label: 'Sábado' },
+        { value: 'domingo', label: 'Domingo' },
+    ];
+
+    const toggleSegmento = (segmentoId: number) => {
+        const nuevosSegmentos = data.segmentos_ids.includes(segmentoId)
+            ? data.segmentos_ids.filter(id => id !== segmentoId)
+            : [...data.segmentos_ids, segmentoId];
+        
+        setData('segmentos_ids', nuevosSegmentos);
+    };
+
+    const seleccionarTodosSegmentos = () => {
+        setData('segmentos_ids', segmentos.map(s => s.id));
+    };
+
+    const limpiarSegmentos = () => {
+        setData('segmentos_ids', []);
+    };
+
+    const segmentosFiltrados = segmentos.filter(seg =>
+        seg.nombre.toLowerCase().includes(busquedaSegmento.toLowerCase())
+    );
 
     const agregarDetalle = () => {
         setData('detalles', [
@@ -121,616 +171,662 @@ export default function Create({ segmentos, tiposHabitacion, servicios, platillo
         }
     };
 
-    const obtenerNombreItem = (detalle: Detalle) => {
-        const items = obtenerItemsDisponibles(detalle.tipo_item);
-        const item = items.find((i) => i.id === detalle.item_id);
-        return item?.nombre || 'Seleccione...';
+    const toggleDiaSemana = (dia: string) => {
+        const nuevosDias = data.dias_semana.includes(dia)
+            ? data.dias_semana.filter((d) => d !== dia)
+            : [...data.dias_semana, dia];
+        setData('dias_semana', nuevosDias);
     };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('promos.store'));
+        post('/promos', {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.visit('/promos');
+            },
+        });
     };
 
     return (
-        <AppLayout> {/* ✅ CAMBIO AQUÍ */}
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nueva Promoción" />
 
-            {/* Encabezado personalizado */}
-            <div className="mb-6">
-                <div className="flex justify-between items-center">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                        Nueva Promoción
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={() => router.visit(route('promos.index'))}
-                        className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700"
-                    >
-                        <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                        Volver
-                    </button>
-                </div>
-            </div>
-
-            <div className="py-12">
+            <div className="py-8 lg:py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <form onSubmit={handleSubmit}>
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold mb-4">Información Básica</h3>
+                    
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => router.visit('/promos')}
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Nueva Promoción</h1>
+                                <p className="text-muted-foreground">
+                                    Crea una nueva promoción para tus clientes
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div className="grid grid-cols-2 gap-6">
-                                    {/* Nombre */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Nombre de la Promoción *
-                                        </label>
-                                        <input
-                                            type="text"
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        
+                        {/* Información Básica */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Información Básica</CardTitle>
+                                <CardDescription>Datos generales de la promoción</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="nombre">
+                                            Nombre <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="nombre"
                                             value={data.nombre}
                                             onChange={(e) => setData('nombre', e.target.value)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            placeholder="Ej: Verano 2024"
                                             required
                                         />
                                         {errors.nombre && (
-                                            <p className="text-red-500 text-xs mt-1">{errors.nombre}</p>
+                                            <p className="text-sm text-red-600">{errors.nombre}</p>
                                         )}
                                     </div>
 
-                                    {/* Código Promocional */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Código Promocional (opcional)
-                                        </label>
-                                        <input
-                                            type="text"
+                                    <div className="space-y-2">
+                                        <Label htmlFor="codigo_promocional">Código Promocional</Label>
+                                        <Input
+                                            id="codigo_promocional"
                                             value={data.codigo_promocional}
                                             onChange={(e) => setData('codigo_promocional', e.target.value.toUpperCase())}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            placeholder="VERANO2025"
-                                        />
-                                        {errors.codigo_promocional && (
-                                            <p className="text-red-500 text-xs mt-1">{errors.codigo_promocional}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Descripción */}
-                                    <div className="col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Descripción
-                                        </label>
-                                        <textarea
-                                            value={data.descripcion}
-                                            onChange={(e) => setData('descripcion', e.target.value)}
-                                            rows={3}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            placeholder="Ej: VERANO2024"
                                         />
                                     </div>
-
-                                    {/* Tipo de Promoción */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Tipo de Promoción *
-                                        </label>
-                                        <select
-                                            value={data.tipo_promo}
-                                            onChange={(e) => setData('tipo_promo', e.target.value as any)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="descuento_porcentual">Descuento Porcentual (%)</option>
-                                            <option value="descuento_fijo">Descuento Fijo (Bs.)</option>
-                                            <option value="paquete">Paquete</option>
-                                            <option value="precio_especial">Precio Especial</option>
-                                            <option value="upgrade">Upgrade</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Estado */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Estado *
-                                        </label>
-                                        <select
-                                            value={data.estado}
-                                            onChange={(e) => setData('estado', e.target.value as any)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        >
-                                            <option value="activa">Activa</option>
-                                            <option value="pausada">Pausada</option>
-                                            <option value="finalizada">Finalizada</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Descuento Porcentual */}
-                                    {data.tipo_promo === 'descuento_porcentual' && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Descuento (%) *
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max="100"
-                                                step="0.01"
-                                                value={data.descuento_porcentaje || ''}
-                                                onChange={(e) => setData('descuento_porcentaje', parseFloat(e.target.value) || null)}
-                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                required
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Descuento Fijo */}
-                                    {data.tipo_promo === 'descuento_fijo' && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Descuento (Bs.) *
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={data.descuento_monto || ''}
-                                                onChange={(e) => setData('descuento_monto', parseFloat(e.target.value) || null)}
-                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                required
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Precio Total Paquete */}
-                                    {(data.tipo_promo === 'paquete' || data.tipo_promo === 'precio_especial') && (
-                                        <>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Precio Total (Bs.) *
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={data.precio_total_paquete || ''}
-                                                    onChange={(e) => setData('precio_total_paquete', parseFloat(e.target.value) || null)}
-                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Precio Normal (Bs.)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={data.precio_normal || ''}
-                                                    onChange={(e) => setData('precio_normal', parseFloat(e.target.value) || null)}
-                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                />
-                                            </div>
-                                        </>
-                                    )}
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Fechas y Segmentación */}
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold mb-4">Fechas y Segmentación</h3>
+                                <div className="space-y-2">
+                                    <Label htmlFor="descripcion">Descripción</Label>
+                                    <Textarea
+                                        id="descripcion"
+                                        value={data.descripcion}
+                                        onChange={(e) => setData('descripcion', e.target.value)}
+                                        rows={3}
+                                        placeholder="Describe los beneficios de la promoción"
+                                    />
+                                </div>
 
-                                <div className="grid grid-cols-2 gap-6">
-                                    {/* Fecha Inicio */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Fecha de Inicio *
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={data.fecha_inicio}
-                                            onChange={(e) => setData('fecha_inicio', e.target.value)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Fecha Fin */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Fecha de Fin *
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={data.fecha_fin}
-                                            onChange={(e) => setData('fecha_fin', e.target.value)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Segmento */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Segmento de Clientes
-                                        </label>
-                                        <select
-                                            value={data.segmento_id || ''}
-                                            onChange={(e) => setData('segmento_id', e.target.value ? parseInt(e.target.value) : null)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tipo_promo">
+                                            Tipo de Promoción <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Select
+                                            value={data.tipo_promo}
+                                            onValueChange={(value) => setData('tipo_promo', value as any)}
                                         >
-                                            <option value="">Todos los clientes</option>
-                                            {segmentos.map((seg) => (
-                                                <option key={seg.id} value={seg.id}>
-                                                    {seg.nombre}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="descuento_porcentual">Descuento %</SelectItem>
+                                                <SelectItem value="descuento_fijo">Descuento Fijo</SelectItem>
+                                                <SelectItem value="paquete">Paquete</SelectItem>
+                                                <SelectItem value="precio_especial">Precio Especial</SelectItem>
+                                                <SelectItem value="upgrade">Upgrade</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
-                                    {/* Aplica A */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Aplica a
-                                        </label>
-                                        <select
-                                            value={data.aplica_a}
-                                            onChange={(e) => setData('aplica_a', e.target.value as any)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    <div className="space-y-2">
+                                        <Label htmlFor="estado">Estado</Label>
+                                        <Select
+                                            value={data.estado}
+                                            onValueChange={(value) => setData('estado', value as any)}
                                         >
-                                            <option value="todos">Todos</option>
-                                            <option value="nuevos">Solo nuevos clientes</option>
-                                            <option value="registrados">Solo clientes registrados</option>
-                                        </select>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="activa">Activa</SelectItem>
+                                                <SelectItem value="pausada">Pausada</SelectItem>
+                                                <SelectItem value="finalizada">Finalizada</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
-                                    {/* Prioridad */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Prioridad (1-10)
-                                        </label>
-                                        <input
+                                    <div className="space-y-2">
+                                        <Label htmlFor="prioridad">Prioridad (1-10)</Label>
+                                        <Input
+                                            id="prioridad"
                                             type="number"
                                             min="1"
                                             max="10"
                                             value={data.prioridad}
-                                            onChange={(e) => setData('prioridad', parseInt(e.target.value) || 5)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">Mayor número = mayor prioridad</p>
-                                    </div>
-
-                                    {/* URL Imagen */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            URL de Imagen
-                                        </label>
-                                        <input
-                                            type="url"
-                                            value={data.image_url}
-                                            onChange={(e) => setData('image_url', e.target.value)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            placeholder="https://ejemplo.com/imagen.jpg"
+                                            onChange={(e) => setData('prioridad', parseInt(e.target.value))}
                                         />
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        {/* Condiciones */}
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold mb-4">Condiciones</h3>
+                                {/* Descuentos - ✅ CORREGIDO */}
+                                {data.tipo_promo === 'descuento_porcentual' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="descuento_porcentaje">
+                                            Descuento (%) <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="descuento_porcentaje"
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value={data.descuento_porcentaje || ''}
+                                            onChange={(e) => setData('descuento_porcentaje', parseFloat(e.target.value) || null)}
+                                            required
+                                        />
+                                    </div>
+                                )}
 
-                                <div className="grid grid-cols-3 gap-6">
-                                    {/* Mínimo Noches */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Mínimo de Noches
+                                {data.tipo_promo === 'descuento_fijo' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="descuento_monto">
+                                            Descuento (Bs.) <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="descuento_monto"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={data.descuento_monto || ''}
+                                            onChange={(e) => setData('descuento_monto', parseFloat(e.target.value) || null)}
+                                            required
+                                        />
+                                    </div>
+                                )}
+
+                                {(data.tipo_promo === 'paquete' || data.tipo_promo === 'precio_especial') && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="precio_total_paquete">
+                                                Precio Total (Bs.) <span className="text-red-500">*</span>
+                                            </Label>
+                                            <Input
+                                                id="precio_total_paquete"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={data.precio_total_paquete || ''}
+                                                onChange={(e) => setData('precio_total_paquete', parseFloat(e.target.value) || null)}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="precio_normal">Precio Normal (Bs.)</Label>
+                                            <Input
+                                                id="precio_normal"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={data.precio_normal || ''}
+                                                onChange={(e) => setData('precio_normal', parseFloat(e.target.value) || null)}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Segmentación de Clientes */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Segmentación de Clientes</CardTitle>
+                                <CardDescription>
+                                    Selecciona los segmentos de clientes que pueden usar esta promoción
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                
+                                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="flex items-center gap-3">
+                                        <Checkbox
+                                            id="aplica_todos"
+                                            checked={data.aplica_todos_segmentos}
+                                            onCheckedChange={(checked) => {
+                                                setData('aplica_todos_segmentos', checked as boolean);
+                                                if (checked) {
+                                                    setData('segmentos_ids', []);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="aplica_todos" className="cursor-pointer">
+                                            <p className="font-medium text-blue-900">
+                                                🌍 Aplicar a TODOS los segmentos
+                                            </p>
+                                            <p className="text-sm text-blue-700">
+                                                Esta promoción estará disponible para todos los clientes
+                                            </p>
                                         </label>
-                                        <input
+                                    </div>
+                                </div>
+
+                                {!data.aplica_todos_segmentos && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <Input
+                                                type="text"
+                                                placeholder="🔍 Buscar segmento..."
+                                                value={busquedaSegmento}
+                                                onChange={(e) => setBusquedaSegmento(e.target.value)}
+                                                className="max-w-xs"
+                                            />
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={seleccionarTodosSegmentos}
+                                                >
+                                                    Seleccionar Todos
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={limpiarSegmentos}
+                                                >
+                                                    Limpiar
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {data.segmentos_ids.length > 0 && (
+                                            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                                                <p className="text-sm font-medium text-green-900 mb-2">
+                                                    ✅ {data.segmentos_ids.length} segmento(s) seleccionado(s):
+                                                </p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {data.segmentos_ids.map((segId) => {
+                                                        const segmento = segmentos.find(s => s.id === segId);
+                                                        return segmento ? (
+                                                            <Badge
+                                                                key={segId}
+                                                                variant="default"
+                                                                className="bg-green-600 hover:bg-green-700 cursor-pointer"
+                                                                onClick={() => toggleSegmento(segId)}
+                                                            >
+                                                                {segmento.nombre}
+                                                                <X className="h-3 w-3 ml-1" />
+                                                            </Badge>
+                                                        ) : null;
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="border rounded-lg divide-y max-h-96 overflow-y-auto">
+                                            {segmentosFiltrados.length === 0 ? (
+                                                <div className="p-8 text-center text-gray-500">
+                                                    <p>No se encontraron segmentos</p>
+                                                </div>
+                                            ) : (
+                                                segmentosFiltrados.map((segmento) => (
+                                                    <label
+                                                        key={segmento.id}
+                                                        className="flex items-center gap-3 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                    >
+                                                        <Checkbox
+                                                            checked={data.segmentos_ids.includes(segmento.id)}
+                                                            onCheckedChange={() => toggleSegmento(segmento.id)}
+                                                        />
+                                                        <div className="flex-1">
+                                                            <p className="font-medium text-gray-900">
+                                                                {segmento.nombre}
+                                                            </p>
+                                                            {segmento.descripcion && (
+                                                                <p className="text-sm text-gray-500">
+                                                                    {segmento.descripcion}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        {data.segmentos_ids.includes(segmento.id) && (
+                                                            <Badge variant="default" className="bg-green-600">
+                                                                Seleccionado
+                                                            </Badge>
+                                                        )}
+                                                    </label>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        {errors.segmentos_ids && (
+                                            <Alert variant="destructive">
+                                                <AlertCircle className="h-4 w-4" />
+                                                <AlertDescription>{errors.segmentos_ids}</AlertDescription>
+                                            </Alert>
+                                        )}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Vigencia y Condiciones */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Vigencia y Condiciones</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fecha_inicio">
+                                            Fecha de Inicio <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="fecha_inicio"
+                                            type="date"
+                                            value={data.fecha_inicio}
+                                            onChange={(e) => setData('fecha_inicio', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fecha_fin">
+                                            Fecha de Fin <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="fecha_fin"
+                                            type="date"
+                                            value={data.fecha_fin}
+                                            onChange={(e) => setData('fecha_fin', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Días de la Semana Aplicables</Label>
+                                    <div className="flex flex-wrap gap-3">
+                                        {diasSemanaOpciones.map((dia) => (
+                                            <label
+                                                key={dia.value}
+                                                className="flex items-center gap-2 cursor-pointer"
+                                            >
+                                                <Checkbox
+                                                    checked={data.dias_semana.includes(dia.value)}
+                                                    onCheckedChange={() => toggleDiaSemana(dia.value)}
+                                                />
+                                                <span className="text-sm">{dia.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="minimo_noches">Mínimo de Noches</Label>
+                                        <Input
+                                            id="minimo_noches"
                                             type="number"
                                             min="1"
                                             value={data.minimo_noches}
-                                            onChange={(e) => setData('minimo_noches', parseInt(e.target.value) || 1)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            onChange={(e) => setData('minimo_noches', parseInt(e.target.value))}
                                         />
                                     </div>
 
-                                    {/* Mínimo Personas */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Mínimo de Personas
-                                        </label>
-                                        <input
+                                    <div className="space-y-2">
+                                        <Label htmlFor="minimo_personas">Mínimo de Personas</Label>
+                                        <Input
+                                            id="minimo_personas"
                                             type="number"
                                             min="1"
                                             value={data.minimo_personas}
-                                            onChange={(e) => setData('minimo_personas', parseInt(e.target.value) || 1)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            onChange={(e) => setData('minimo_personas', parseInt(e.target.value))}
                                         />
                                     </div>
 
-                                    {/* Días Anticipación */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Días de Anticipación
-                                        </label>
-                                        <input
+                                    <div className="space-y-2">
+                                        <Label htmlFor="dias_anticipacion_minimo">Días de Anticipación</Label>
+                                        <Input
+                                            id="dias_anticipacion_minimo"
                                             type="number"
                                             min="0"
                                             value={data.dias_anticipacion_minimo}
-                                            onChange={(e) => setData('dias_anticipacion_minimo', parseInt(e.target.value) || 0)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            onChange={(e) => setData('dias_anticipacion_minimo', parseInt(e.target.value))}
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">Para early bird</p>
                                     </div>
 
-                                    {/* Cantidad Máxima Usos */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Usos Máximos (Total)
-                                        </label>
-                                        <input
+                                    <div className="space-y-2">
+                                        <Label htmlFor="cantidad_maxima_usos">Usos Máximos</Label>
+                                        <Input
+                                            id="cantidad_maxima_usos"
                                             type="number"
                                             min="1"
                                             value={data.cantidad_maxima_usos || ''}
                                             onChange={(e) => setData('cantidad_maxima_usos', parseInt(e.target.value) || null)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             placeholder="Ilimitado"
                                         />
                                     </div>
 
-                                    {/* Usos por Cliente */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Usos por Cliente
-                                        </label>
-                                        <input
+                                    <div className="space-y-2">
+                                        <Label htmlFor="usos_por_cliente">Usos por Cliente</Label>
+                                        <Input
+                                            id="usos_por_cliente"
                                             type="number"
                                             min="1"
                                             value={data.usos_por_cliente}
-                                            onChange={(e) => setData('usos_por_cliente', parseInt(e.target.value) || 1)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            onChange={(e) => setData('usos_por_cliente', parseInt(e.target.value))}
                                         />
                                     </div>
+                                </div>
 
-                                    {/* Días desde última visita */}
+                                <div className="flex gap-6">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <Checkbox
+                                            checked={data.incluye_upgrade}
+                                            onCheckedChange={(checked) => setData('incluye_upgrade', checked as boolean)}
+                                        />
+                                        <span className="text-sm">Incluye Upgrade</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <Checkbox
+                                            checked={data.requiere_pago_completo}
+                                            onCheckedChange={(checked) => setData('requiere_pago_completo', checked as boolean)}
+                                        />
+                                        <span className="text-sm">Requiere Pago Completo</span>
+                                    </label>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Detalles de Items */}
+                        <Card>
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Días desde Última Visita
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={data.dias_desde_ultima_visita || ''}
-                                            onChange={(e) => setData('dias_desde_ultima_visita', parseInt(e.target.value) || null)}
-                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            placeholder="Para reactivación"
-                                        />
+                                        <CardTitle>Items Incluidos</CardTitle>
+                                        <CardDescription>
+                                            Habitaciones, servicios o platillos que incluye la promoción
+                                        </CardDescription>
                                     </div>
-
-                                    {/* Checkboxes */}
-                                    <div className="col-span-3 flex gap-6">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={data.incluye_upgrade}
-                                                onChange={(e) => setData('incluye_upgrade', e.target.checked)}
-                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            <span className="ml-2 text-sm text-gray-700">Incluye Upgrade</span>
-                                        </label>
-
-                                        <label className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={data.requiere_pago_completo}
-                                                onChange={(e) => setData('requiere_pago_completo', e.target.checked)}
-                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                            />
-                                            <span className="ml-2 text-sm text-gray-700">Requiere Pago Completo</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Detalles de la Promoción */}
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                            <div className="p-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-semibold">Detalles de la Promoción *</h3>
                                     <div className="flex gap-2">
-                                        <select
+                                        <Select
                                             value={tipoItemSeleccionado}
-                                            onChange={(e) => setTipoItemSeleccionado(e.target.value as any)}
-                                            className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            onValueChange={(value) => setTipoItemSeleccionado(value as any)}
                                         >
-                                            <option value="habitacion">Habitación</option>
-                                            <option value="servicio">Servicio</option>
-                                            <option value="platillo">Platillo</option>
-                                        </select>
-                                        <button
-                                            type="button"
-                                            onClick={agregarDetalle}
-                                            className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700"
-                                        >
-                                            <PlusIcon className="h-5 w-5 mr-2" />
-                                            Agregar Item
-                                        </button>
+                                            <SelectTrigger className="w-40">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="habitacion">Habitación</SelectItem>
+                                                <SelectItem value="servicio">Servicio</SelectItem>
+                                                <SelectItem value="platillo">Platillo</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Button type="button" onClick={agregarDetalle} size="sm">
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Agregar
+                                        </Button>
                                     </div>
                                 </div>
-
-                                {errors.detalles && (
-                                    <p className="text-red-500 text-sm mb-4">
-                                        Debes agregar al menos un item a la promoción
-                                    </p>
-                                )}
-
+                            </CardHeader>
+                            <CardContent>
                                 {data.detalles.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-500">
-                                        <p>No hay items agregados. Selecciona un tipo y haz clic en "Agregar Item".</p>
-                                    </div>
+                                    <Alert>
+                                        <AlertCircle className="h-4 w-4" />
+                                        <AlertDescription>
+                                            No hay items agregados. Selecciona un tipo y haz clic en "Agregar".
+                                        </AlertDescription>
+                                    </Alert>
                                 ) : (
                                     <div className="space-y-4">
                                         {data.detalles.map((detalle, index) => (
                                             <div
                                                 key={index}
-                                                className="border border-gray-300 rounded-lg p-4 bg-gray-50"
+                                                className="border rounded-lg p-4 bg-gray-50 space-y-4"
                                             >
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium">
-                                                            {detalle.tipo_item === 'habitacion' ? '🏠 Habitación' : detalle.tipo_item === 'servicio' ? '🛎️ Servicio' : '🍽️ Platillo'}
-                                                        </span>
-                                                        <span className="text-sm font-medium">Item #{index + 1}</span>
-                                                    </div>
-                                                    <button
+                                                <div className="flex justify-between items-start">
+                                                    <Badge>
+                                                        {detalle.tipo_item === 'habitacion' ? '🏠' : detalle.tipo_item === 'servicio' ? '🛎️' : '🍽️'}{' '}
+                                                        Item #{index + 1}
+                                                    </Badge>
+                                                    <Button
                                                         type="button"
+                                                        variant="ghost"
+                                                        size="icon"
                                                         onClick={() => eliminarDetalle(index)}
-                                                        className="text-red-600 hover:text-red-800"
                                                     >
-                                                        <TrashIcon className="h-5 w-5" />
-                                                    </button>
+                                                        <Trash2 className="h-4 w-4 text-red-600" />
+                                                    </Button>
                                                 </div>
 
                                                 <div className="grid grid-cols-3 gap-4">
-                                                    {/* Seleccionar Item */}
-                                                    <div className="col-span-2">
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Seleccionar Item *
-                                                        </label>
-                                                        <select
-                                                            value={detalle.item_id}
-                                                            onChange={(e) => actualizarDetalle(index, 'item_id', parseInt(e.target.value))}
-                                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                            required
+                                                    <div className="col-span-2 space-y-2">
+                                                        <Label>Seleccionar Item</Label>
+                                                        <Select
+                                                            value={detalle.item_id.toString()}
+                                                            onValueChange={(value) =>
+                                                                actualizarDetalle(index, 'item_id', parseInt(value))
+                                                            }
                                                         >
-                                                            <option value={0}>Seleccione...</option>
-                                                            {obtenerItemsDisponibles(detalle.tipo_item).map((item) => (
-                                                                <option key={item.id} value={item.id}>
-                                                                    {item.nombre} - Bs. {item.precio}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Seleccione..." />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {obtenerItemsDisponibles(detalle.tipo_item).map((item) => (
+                                                                    <SelectItem key={item.id} value={item.id.toString()}>
+                                                                        {item.nombre} - Bs. {item.precio}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
 
-                                                    {/* Cantidad */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Cantidad
-                                                        </label>
-                                                        <input
+                                                    <div className="space-y-2">
+                                                        <Label>Cantidad</Label>
+                                                        <Input
                                                             type="number"
                                                             min="1"
                                                             value={detalle.cantidad}
-                                                            onChange={(e) => actualizarDetalle(index, 'cantidad', parseInt(e.target.value) || 1)}
-                                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                            onChange={(e) =>
+                                                                actualizarDetalle(index, 'cantidad', parseInt(e.target.value))
+                                                            }
                                                         />
                                                     </div>
 
-                                                    {/* Noches (solo habitaciones) */}
                                                     {detalle.tipo_item === 'habitacion' && (
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                                Noches
-                                                            </label>
-                                                            <input
+                                                        <div className="space-y-2">
+                                                            <Label>Noches</Label>
+                                                            <Input
                                                                 type="number"
                                                                 min="1"
                                                                 value={detalle.noches || 1}
-                                                                onChange={(e) => actualizarDetalle(index, 'noches', parseInt(e.target.value) || 1)}
-                                                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                                onChange={(e) =>
+                                                                    actualizarDetalle(index, 'noches', parseInt(e.target.value))
+                                                                }
                                                             />
                                                         </div>
                                                     )}
 
-                                                    {/* Descuento % */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Descuento (%)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            value={detalle.descuento_porcentaje || ''}
-                                                            onChange={(e) => actualizarDetalle(index, 'descuento_porcentaje', parseFloat(e.target.value) || null)}
-                                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                            disabled={detalle.es_gratis}
-                                                        />
-                                                    </div>
-
-                                                    {/* Precio Especial */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Precio Especial (Bs.)
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            step="0.01"
-                                                            value={detalle.precio_especial || ''}
-                                                            onChange={(e) => actualizarDetalle(index, 'precio_especial', parseFloat(e.target.value) || null)}
-                                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                            disabled={detalle.es_gratis}
-                                                        />
-                                                    </div>
-
-                                                    {/* Es Gratis */}
-                                                    <div className="flex items-end">
-                                                        <label className="flex items-center">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={detalle.es_gratis}
-                                                                onChange={(e) => actualizarDetalle(index, 'es_gratis', e.target.checked)}
-                                                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                            />
-                                                            <span className="ml-2 text-sm text-gray-700">Es Gratis 🎁</span>
-                                                        </label>
-                                                    </div>
-
-                                                    {/* Detalle adicional */}
-                                                    <div className="col-span-3">
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Notas adicionales
-                                                        </label>
-                                                        <input
-                                                            type="text"
+                                                    <div className="col-span-3 space-y-2">
+                                                        <Label>Detalle Adicional</Label>
+                                                        <Input
                                                             value={detalle.detalle}
-                                                            onChange={(e) => actualizarDetalle(index, 'detalle', e.target.value)}
-                                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                            placeholder="Ej: Según disponibilidad"
+                                                            onChange={(e) =>
+                                                                actualizarDetalle(index, 'detalle', e.target.value)
+                                                            }
+                                                            placeholder="Ej: Vista al mar, desayuno incluido..."
                                                         />
+                                                    </div>
+
+                                                    <div className="col-span-3">
+                                                        <label className="flex items-center gap-2 cursor-pointer">
+                                                            <Checkbox
+                                                                checked={detalle.es_gratis}
+                                                                onCheckedChange={(checked) =>
+                                                                    actualizarDetalle(index, 'es_gratis', checked)
+                                                                }
+                                                            />
+                                                            <span className="text-sm">Este item es GRATIS 🎁</span>
+                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 )}
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Imagen */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Imagen</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="image_url">URL de Imagen</Label>
+                                    <Input
+                                        id="image_url"
+                                        type="url"
+                                        value={data.image_url}
+                                        onChange={(e) => setData('image_url', e.target.value)}
+                                        placeholder="https://ejemplo.com/imagen.jpg"
+                                    />
+                                </div>
+
+                                {data.image_url && (
+                                    <div className="mt-4">
+                                        <img
+                                            src={data.image_url}
+                                            alt="Preview"
+                                            className="w-full max-w-md h-48 object-cover rounded-lg"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
                         {/* Botones de Acción */}
                         <div className="flex justify-end gap-4">
-                            <button
+                            <Button
                                 type="button"
-                                onClick={() => router.visit(route('promos.index'))}
-                                className="px-6 py-2 bg-gray-200 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-300"
+                                variant="outline"
+                                onClick={() => router.visit('/promos')}
                             >
                                 Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="px-6 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-indigo-700 disabled:opacity-50"
-                            >
-                                {processing ? 'Guardando...' : 'Crear Promoción'}
-                            </button>
+                            </Button>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Creando...' : 'Crear Promoción'}
+                            </Button>
                         </div>
                     </form>
                 </div>

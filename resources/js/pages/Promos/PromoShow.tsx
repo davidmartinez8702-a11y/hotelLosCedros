@@ -231,22 +231,56 @@ export default function PromoShow({ promo, stats }: Props) {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Estadísticas</CardTitle>
+                                {(stats.total_usos === 0 && stats.total_ahorro === 0) && (
+                                    <CardDescription className="text-yellow-600">
+                                        Esta promoción aún no ha sido utilizada
+                                    </CardDescription>
+                                )}
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground">Total de Usos</p>
-                                    <p className="text-2xl font-bold">{stats.total_usos}</p>
+                                    <p className="text-2xl font-bold">
+                                        {stats.total_usos}
+                                        {stats.total_usos === 0 && (
+                                            <span className="text-sm text-muted-foreground ml-2">
+                                                (Sin usos aún)
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Ahorro Total</p>
                                     <p className="text-2xl font-bold text-green-600">
                                         {formatCurrency(stats.total_ahorro)}
+                                        {stats.total_ahorro === 0 && (
+                                            <span className="text-sm text-muted-foreground ml-2">
+                                                (Sin ahorros generados)
+                                            </span>
+                                        )}
                                     </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Clientes Únicos</p>
-                                    <p className="text-2xl font-bold">{stats.clientes_unicos}</p>
+                                    <p className="text-2xl font-bold">
+                                        {stats.clientes_unicos}
+                                        {stats.clientes_unicos === 0 && (
+                                            <span className="text-sm text-muted-foreground ml-2">
+                                                (Ningún cliente aún)
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
+                                
+                                {/* ✅ Mensaje informativo si no hay usos */}
+                                {stats.total_usos === 0 && (
+                                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p className="text-sm text-blue-800">
+                                            💡 <strong>Nota:</strong> Esta promoción comenzará a generar estadísticas 
+                                            cuando los clientes realicen reservas utilizándola.
+                                        </p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 

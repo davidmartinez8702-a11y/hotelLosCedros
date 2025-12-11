@@ -38,20 +38,23 @@ class Segmento extends Model
     /**
      * Promociones asociadas a este segmento
      */
-    public function promos(): BelongsToMany
+    public function promos()
     {
-        return $this->belongsToMany(Promo::class, 'segmento_promo')
-            ->withPivot([
-                'estado',
-                'aplicacion_automatica',
-                'prioridad',
-                'descuento_adicional',
-                'fecha_inicio',
-                'fecha_fin',
-                'usos_maximos',
-                'usos_actuales'
-            ])
-            ->withTimestamps();
+        return $this->belongsToMany(
+            Promo::class,
+            'segmento_promo',
+            'segmento_id',
+            'promo_id'
+        )->withPivot([
+            'estado',
+            'aplicacion_automatica',
+            'prioridad',
+            'descuento_adicional',
+            'fecha_inicio',
+            'fecha_fin',
+            'usos_maximos',
+            'usos_actuales',
+        ])->withTimestamps();
     }
 
     /**
@@ -60,16 +63,9 @@ class Segmento extends Model
     public function promosActivas()
     {
         return $this->promos()
-            ->wherePivot('estado', 'activa')
-            ->wherePivot('aplicacion_automatica', true)
-            ->where(function($query) {
-                $query->whereNull('segmento_promo.fecha_inicio')
-                      ->orWhere('segmento_promo.fecha_inicio', '<=', now());
-            })
-            ->where(function($query) {
-                $query->whereNull('segmento_promo.fecha_fin')
-                      ->orWhere('segmento_promo.fecha_fin', '>=', now());
-            })
-            ->orderByPivot('prioridad', 'desc');
+            ->where('promos.estado', 'activa')
+            ->where('segmento_promo.estado', 'activa')
+            ->where('promos.fecha_inicio', '<=', now())
+            ->where('promos.fecha_fin', '>=', now());
     }
 }

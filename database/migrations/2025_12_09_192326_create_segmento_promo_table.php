@@ -22,20 +22,22 @@ return new class extends Migration
             // ✅ Configuración
             $table->boolean('aplicacion_automatica')->default(true); // Si se aplica automáticamente
             $table->integer('prioridad')->default(0); // Orden de aplicación (si hay múltiples promos)
-            $table->decimal('descuento_adicional', 5, 2)->nullable(); // % extra para este segmento
+            $table->decimal('descuento_adicional', 5, 2)->nullable()->comment('% extra para este segmento'); // % extra para este segmento
             
-            // ✅ Vigencia
+            // ✅ Vigencia (opcional, sobrescribe fechas de la promo)
             $table->date('fecha_inicio')->nullable(); // Cuándo inicia esta promo para este segmento
             $table->date('fecha_fin')->nullable(); // Cuándo termina
             
-            // ✅ Límites
+            // ✅ Límites específicos por segmento
             $table->integer('usos_maximos')->nullable(); // Cuántas veces se puede usar
             $table->integer('usos_actuales')->default(0); // Cuántas veces se usó
             
             $table->timestamps();
 
+            // ✅ Índices
             $table->unique(['segmento_id', 'promo_id']);
             $table->index(['estado', 'fecha_inicio', 'fecha_fin']);
+            $table->index('prioridad');
         });
     }
 

@@ -21,12 +21,21 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Ramsey\Uuid\Type\Time;
+use App\Models\Promo;
 
 Route::get('/', function () {
-    // return Inertia::render('welcome', [
-    //     'canRegister' => Features::enabled(Features::registration()),
-    // ]);
-    return Inertia::render('Landing/LandingPage');
+    // ✅ Obtener solo promociones públicas (sin segmentos específicos)
+    $promociones = Promo::where('estado', 'activa')
+        ->where('fecha_inicio', '<=', now())
+        ->where('fecha_fin', '>=', now())
+        ->whereDoesntHave('segmentos') // Solo las que aplican a todos
+        ->orderBy('prioridad', 'desc')
+        ->limit(6) // Máximo 6 para el carrusel
+        ->get(['id', 'nombre', 'descripcion', 'image_url', 'tipo_promo', 'descuento_porcentaje', 'precio_total_paquete', 'precio_normal', 'fecha_fin']);
+
+    return inertia('Landing/LandingPage', [
+        'promociones' => $promociones
+    ]);
 })->name('home');
 
 Route::get('/login', function (Request $request) {
