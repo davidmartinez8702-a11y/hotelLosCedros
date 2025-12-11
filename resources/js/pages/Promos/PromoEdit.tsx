@@ -100,10 +100,10 @@ interface Detalle {
     tipo_item: 'habitacion' | 'servicio' | 'platillo';
     item_id: number;
     cantidad: number;
-    noches: number | null;
-    descuento_porcentaje: number | null;
-    descuento_monto: number | null;
-    precio_especial: number | null;
+    noches: number; // ✅ Remover | null
+    descuento_porcentaje: number; // ✅ Remover | null
+    descuento_monto: number; // ✅ Remover | null
+    precio_especial: number; // ✅ Remover | null
     es_gratis: boolean;
     detalle: string;
 }
@@ -145,10 +145,10 @@ export default function PromoEdit({ promo, segmentos, tiposHabitacion, servicios
             tipo_item: d.tipo_item,
             item_id: d.tipo_habitacion_id || d.servicio_id || d.platillo_id || 0,
             cantidad: d.cantidad,
-            noches: d.noches || 1,
-            descuento_porcentaje: d.descuento_porcentaje || 0,
-            descuento_monto: d.descuento_monto || 0,
-            precio_especial: d.precio_especial || 0,
+            noches: d.noches || 1, // ✅ Ya está bien, asegura un valor por defecto
+            descuento_porcentaje: d.descuento_porcentaje || 0, // ✅ Ya está bien
+            descuento_monto: d.descuento_monto || 0, // ✅ Ya está bien
+            precio_especial: d.precio_especial || 0, // ✅ Ya está bien
             es_gratis: d.es_gratis,
             detalle: d.detalle || '',
         })),
@@ -159,7 +159,7 @@ export default function PromoEdit({ promo, segmentos, tiposHabitacion, servicios
             tipo_item: d.tipo_item,
             item_id: d.tipo_habitacion_id || d.servicio_id || d.platillo_id || 0,
             cantidad: d.cantidad,
-            noches: d.noches || 1,
+            noches: d.noches || 1, // ✅ Asegura que nunca sea null
             descuento_porcentaje: d.descuento_porcentaje || 0,
             descuento_monto: d.descuento_monto || 0,
             precio_especial: d.precio_especial || 0,
@@ -185,7 +185,7 @@ export default function PromoEdit({ promo, segmentos, tiposHabitacion, servicios
                 tipo_item: 'habitacion',
                 item_id: 0,
                 cantidad: 1,
-                noches: 1,
+                noches: 1, // ✅ Ya no es nullable
                 descuento_porcentaje: 0,
                 descuento_monto: 0,
                 precio_especial: 0,
@@ -208,6 +208,12 @@ export default function PromoEdit({ promo, segmentos, tiposHabitacion, servicios
         // Si cambia el tipo de item, resetear item_id
         if (campo === 'tipo_item') {
             nuevosDetalles[index].item_id = 0;
+            // ✅ Si cambia a servicio/platillo, resetear noches a 0
+            if (valor !== 'habitacion') {
+                nuevosDetalles[index].noches = 0;
+            } else {
+                nuevosDetalles[index].noches = 1;
+            }
         }
         
         setDetalles(nuevosDetalles);
@@ -729,12 +735,12 @@ export default function PromoEdit({ promo, segmentos, tiposHabitacion, servicios
                                                         <Input
                                                             type="number"
                                                             min="1"
-                                                            value={detalle.noches || 1}
+                                                            value={detalle.noches || 1} // ✅ Asegura valor por defecto en UI
                                                             onChange={(e) =>
                                                                 actualizarDetalle(
                                                                     index,
                                                                     'noches',
-                                                                    parseInt(e.target.value)
+                                                                    parseInt(e.target.value) || 1 // ✅ Asegura que nunca sea NaN o null
                                                                 )
                                                             }
                                                         />

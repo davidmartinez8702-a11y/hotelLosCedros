@@ -39,7 +39,7 @@ const Promotions = () => {
   // 💰 Calcular descuento
   const getDescuento = (promo: Promo) => {
     if (promo.tipo_promo === 'descuento_porcentual' && promo.descuento_porcentaje) {
-      return `${promo.descuento_porcentual}% OFF`;
+      return `${promo.descuento_porcentaje}% OFF`;
     }
     if (promo.precio_total_paquete && promo.precio_normal) {
       const precioTotal = parseFloat(String(promo.precio_total_paquete));

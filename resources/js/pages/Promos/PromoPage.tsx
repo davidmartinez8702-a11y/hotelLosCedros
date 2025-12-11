@@ -55,8 +55,8 @@ export default function Index({ promos, filtros }: Props) {
     const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { label: 'Dashboard', href: route('dashboard') },
-        { label: 'Promociones', href: route('promos.index') },
+        { title: 'Dashboard', href: route('dashboard') }, // ✅ CORRECCIÓN: label → title
+        { title: 'Promociones', href: route('promos.index') }, // ✅ CORRECCIÓN: label → title
     ];
 
     const getTipoPromoLabel = (tipo: string) => {

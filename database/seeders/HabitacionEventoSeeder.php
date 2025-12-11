@@ -33,6 +33,21 @@ class HabitacionEventoSeeder extends Seeder
     ];
 
     /**
+     * Pisos disponibles en el hotel
+     */
+    private array $pisos = ['1', '2', '3', '4', '5', 'PB'];
+
+    /**
+     * Alas/Secciones del hotel
+     */
+    private array $alas = ['Torre Norte', 'Torre Sur', 'Ala Este', 'Ala Oeste', 'Edificio Principal'];
+
+    /**
+     * Tipos de vista
+     */
+    private array $vistas = ['Mar', 'Jardín', 'Ciudad', 'Montaña', 'Piscina', 'Interior'];
+
+    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -62,33 +77,71 @@ class HabitacionEventoSeeder extends Seeder
             $this->command->info("📦 Procesando: {$tipo->nombre} ({$cantidadHabitaciones} unidades)");
 
             for ($i = 1; $i <= $cantidadHabitaciones; $i++) {
-                $prefijo = $tipo->tipo === 'habitacion' ? 'HAB' : 'EVT';
-                $codigo = "{$prefijo}-{$tipo->id}-{$i}";
+                // ✅ Generar código más legible
+                $prefijo = $tipo->tipo === 'habitacion' ? '' : 'S';
+                $numeroHabitacion = str_pad($contadorGlobal, 3, '0', STR_PAD_LEFT);
+                $codigo = $prefijo ? "{$prefijo}-{$numeroHabitacion}" : $numeroHabitacion;
 
                 try {
                     $habitacionExistente = HabitacionEvento::where('codigo', $codigo)->first();
 
                     if ($habitacionExistente) {
-                        // Ya existe, NO actualizar estado (mantener el actual)
+                        // Ya existe, NO actualizar (mantener datos actuales)
                         $actualizados++;
                         $this->command->warn("      🔄 [{$contadorGlobal}] Ya existe: {$codigo} - {$tipo->nombre} [{$habitacionExistente->estado}]");
                     } else {
-                        // No existe, crear con estado aleatorio
-                        $estado = $this->getEstadoAleatorio();
-                        HabitacionEvento::create([
+                        // ✅ Crear con todos los nuevos campos
+                        $esHabitacion = $tipo->tipo === 'habitacion';
+                        
+                        $data = [
                             'codigo' => $codigo,
                             'tipo_habitacion_id' => $tipo->id,
-                            'nombre' => $tipo->nombre,
-                            'estado' => $estado,
-                        ]);
+                            'nombre' => $tipo->nombre, // ✅ Heredar nombre del tipo
+                            'estado' => $this->getEstadoAleatorio(),
+                        ];
+
+                        // ✅ Solo agregar ubicación física para habitaciones (no salones)
+                        if ($esHabitacion) {
+                            $data['piso'] = $this->pisos[array_rand($this->pisos)];
+                            $data['ala_seccion'] = $this->alas[array_rand($this->alas)];
+                            $data['vista'] = $this->vistas[array_rand($this->vistas)];
+                        } else {
+                            // Salones están en ubicaciones específicas
+                            $data['piso'] = 'PB';
+                            $data['ala_seccion'] = 'Edificio Principal';
+                            $data['vista'] = null;
+                        }
+
+                        // ✅ Notas internas aleatorias (10% probabilidad)
+                        if (rand(1, 10) === 1) {
+                            $data['notas_internas'] = $this->getNotaAleatoria();
+                            $data['requiere_mantenimiento'] = rand(0, 1) === 1;
+                        }
+
+                        // ✅ Última limpieza (80% tiene registro)
+                        if (rand(1, 10) <= 8) {
+                            $data['ultima_limpieza'] = now()->subDays(rand(0, 7));
+                        }
+
+                        HabitacionEvento::create($data);
                         $creados++;
-                        $this->command->info("      ✅ [{$contadorGlobal}] Creado: {$codigo} - {$tipo->nombre} [{$estado}]");
+                        
+                        $ubicacion = $esHabitacion 
+                            ? "Piso {$data['piso']} - {$data['ala_seccion']} - Vista {$data['vista']}"
+                            : "Salón en {$data['ala_seccion']}";
+                        
+                        $this->command->info("      ✅ [{$contadorGlobal}] Creado: {$codigo} - {$tipo->nombre} [{$data['estado']}]");
+                        $this->command->line("         📍 {$ubicacion}");
                     }
 
                     $contadorGlobal++;
 
                 } catch (Exception $e) {
                     $this->command->error("      ❌ Error en {$codigo}: {$e->getMessage()}");
+                    Log::error("Error creando habitación {$codigo}", [
+                        'mensaje' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
                 }
             }
 
@@ -108,11 +161,51 @@ class HabitacionEventoSeeder extends Seeder
     }
 
     /**
-     * Genera un estado aleatorio
+     * Genera un estado aleatorio con distribución realista
      */
     private function getEstadoAleatorio(): string
     {
-        $estados = ['activo','inactivo', 'limpieza', 'mantenimiento'];
-        return $estados[array_rand($estados)];
+        $estadosConPeso = [
+            'disponible' => 50,      // 50% disponibles
+            'ocupada' => 25,         // 25% ocupadas
+            'limpieza' => 15,        // 15% en limpieza
+            'mantenimiento' => 5,    // 5% mantenimiento
+            'bloqueada' => 3,        // 3% bloqueadas
+            'fuera_de_servicio' => 2 // 2% fuera de servicio
+        ];
+
+        $total = array_sum($estadosConPeso);
+        $rand = rand(1, $total);
+        $acumulado = 0;
+
+        foreach ($estadosConPeso as $estado => $peso) {
+            $acumulado += $peso;
+            if ($rand <= $acumulado) {
+                return $estado;
+            }
+        }
+
+        return 'disponible'; // fallback
+    }
+
+    /**
+     * Genera notas internas aleatorias
+     */
+    private function getNotaAleatoria(): string
+    {
+        $notas = [
+            'Aire acondicionado revisado el ' . now()->subDays(rand(1, 30))->format('Y-m-d'),
+            'Cliente VIP solicitó almohadas extra',
+            'Minibar requiere reabastecimiento',
+            'TV con control remoto nuevo',
+            'Solicitar revisión de ducha',
+            'Cambiar cortinas próximamente',
+            'Cliente alérgico a plumas - usar almohadas sintéticas',
+            'Grifo con ligera fuga - revisar',
+            'Puerta requiere ajuste de cerradura',
+            'Última fumigación: ' . now()->subDays(rand(30, 90))->format('Y-m-d'),
+        ];
+
+        return $notas[array_rand($notas)];
     }
 }

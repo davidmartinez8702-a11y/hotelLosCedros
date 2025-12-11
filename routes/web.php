@@ -15,6 +15,8 @@ use App\Http\Controllers\Recepcion\ReservaRecepcionController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\CuentaController;
+use App\Http\Controllers\HabitacionEventoController;
+use App\Http\Controllers\PromoController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -277,7 +279,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('kmeans.logs');
 });
 
-use App\Http\Controllers\PromoController;
 
 // Rutas de Promociones
 Route::middleware(['auth'])->group(function () {
@@ -285,4 +286,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('promos/{promo}/toggle', [PromoController::class, 'toggleEstado'])->name('promos.toggle');
     Route::post('promos/validar-codigo', [PromoController::class, 'validarCodigo'])->name('promos.validar-codigo');
     Route::get('promos/disponibles', [PromoController::class, 'promocionesDisponibles'])->name('promos.disponibles');
+});
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // 🏨 Habitaciones Físicas (accesible para todos los autenticados)
+    Route::resource('habitaciones', HabitacionEventoController::class);
+    Route::post('habitaciones/{habitacione}/cambiar-estado', [HabitacionEventoController::class, 'cambiarEstado'])
+        ->name('habitaciones.cambiar-estado');
+    Route::get('habitaciones-dashboard', [HabitacionEventoController::class, 'dashboard'])
+        ->name('habitaciones.dashboard');
 });
