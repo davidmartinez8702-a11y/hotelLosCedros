@@ -1,0 +1,206 @@
+# 🎯 SISTEMA DE PROMOCIONES - HOTEL
+
+## 📊 TIPOS DE PROMOCIONES EN HOTELES REALES
+
+### 1️⃣ PROMOCIONES DE PRECIO/DESCUENTO
+
+#### A. Descuento Porcentual
+- **Descripción**: Porcentaje de descuento sobre el precio normal
+- **Ejemplos**:
+  - "20% OFF en habitaciones Deluxe"
+  - "30% de descuento en temporada baja"
+  - "15% OFF para clientes nuevos"
+
+#### B. Descuento Fijo
+- **Descripción**: Monto fijo de descuento en bolivianos
+- **Ejemplos**:
+  - "Bs. 200 de descuento en tu reserva"
+  - "Ahorra Bs. 500 en suites"
+  
+#### C. Precio Especial por Noche
+- **Descripción**: Precio promocional específico
+- **Ejemplos**:
+  - "Suite Junior a Bs. 500/noche (normal: Bs. 950)"
+  - "Habitación Deluxe por Bs. 700 (normal: Bs. 1,100)"
+
+#### D. Descuento por Estadía Prolongada
+- **Descripción**: Descuento por reservar múltiples noches
+- **Ejemplos**:
+  - "5 noches al precio de 4"
+  - "7 noches: 15% descuento adicional"
+  - "Reserva 3+ noches: 10% OFF"
+
+---
+
+### 2️⃣ PROMOCIONES DE PAQUETES/COMBOS
+
+#### A. Habitación + Servicios
+- **Descripción**: Combo de habitación con servicios incluidos
+- **Ejemplos**:
+  - "Habitación + Desayuno + Spa por Bs. 1,200"
+  - "Suite + 2 Cenas + Transporte por Bs. 1,800"
+
+#### B. Paquete Romántico
+- **Descripción**: Especial para parejas
+- **Contenido típico**:
+  - Habitación Luna de Miel (2 noches)
+  - Cena romántica para 2
+  - Champagne de bienvenida
+  - Decoración romántica
+  - Late check-out
+- **Precio ejemplo**: Bs. 2,500
+
+#### C. Paquete Familiar
+- **Descripción**: Para familias con niños
+- **Contenido típico**:
+  - 2 Habitaciones conectadas (3 noches)
+  - Desayuno para 4 personas
+  - Acceso a piscina y área de juegos
+  - 1 Cena familiar
+- **Precio ejemplo**: Bs. 3,200
+
+#### D. Paquete Corporativo
+- **Descripción**: Para empresas y eventos
+- **Contenido típico**:
+  - 10+ Habitaciones (2 noches)
+  - Salón de conferencias
+  - Coffee breaks (2 por día)
+  - Desayuno ejecutivo
+  - Wi-Fi premium
+- **Precio ejemplo**: Bs. 15,000
+
+---
+
+### 3️⃣ PROMOCIONES POR TEMPORADA
+
+#### A. Temporada Baja
+- **Cuándo**: Marzo-Mayo, Septiembre-Noviembre
+- **Descuento típico**: 25-40% OFF
+- **Ejemplo**: "Primavera 2025: 30% OFF en todas las habitaciones"
+
+#### B. Early Booking (Reserva Anticipada)
+- **Condición**: Reservar con X días de anticipación
+- **Descuento típico**: 20-30% OFF
+- **Ejemplos**:
+  - "Reserva con 60 días: 25% OFF"
+  - "Planifica tu viaje: 30% de descuento"
+
+#### C. Last Minute (Última Hora)
+- **Condición**: Reservar para los próximos 1-3 días
+- **Descuento típico**: 30-50% OFF
+- **Ejemplo**: "Reserva hoy para mañana: 40% OFF"
+
+#### D. Fechas Especiales
+- **Eventos**: Black Friday, Cyber Monday, San Valentín, Navidad
+- **Ejemplos**:
+  - "Black Friday: 50% OFF en todas las habitaciones"
+  - "San Valentín: Paquete Romántico 2x1"
+  - "Fin de Año: Suite + Cena de gala por Bs. 3,500"
+
+---
+
+### 4️⃣ PROMOCIONES POR FIDELIDAD/SEGMENTO
+
+#### A. Clientes VIP (Alto Valor)
+- **Segmento K-means**: Clientes de Alto Valor
+- **Características**: 
+  - Gasto promedio alto (>Bs. 2,000)
+  - Visitas frecuentes (5+ al año)
+- **Beneficios**:
+  - Upgrade gratuito a categoría superior
+  - Check-out tardío sin costo (hasta 16:00)
+  - Welcome drink y amenities premium
+  - Descuento 20% en servicios spa
+  - Acceso a lounge exclusivo
+- **Ejemplo promo**: "Exclusivo VIP: Suite Presidencial + Spa gratis"
+
+#### B. Clientes Frecuentes (Leales)
+- **Segmento K-means**: Clientes Leales
+- **Características**:
+  - Visitas regulares (3-5 al año)
+  - Gasto moderado (Bs. 800-1,500)
+- **Beneficios**:
+  - Programa de puntos: 1 noche = 100 puntos
+  - 5ta visita: 1 noche gratis
+  - Descuento 15% en habitaciones
+  - Desayuno gratuito
+- **Ejemplo promo**: "Cliente Frecuente: Acumula puntos y gana noches gratis"
+
+#### C. Clientes Inactivos (Dormidos)
+- **Segmento K-means**: Clientes Inactivos
+- **Características**:
+  - Sin visitas en 6+ meses
+  - Gasto histórico bajo-medio
+- **Beneficios** (reactivación agresiva):
+  - Descuento 35-40% OFF
+  - Upgrade gratuito si disponible
+  - Código exclusivo de reactivación
+- **Ejemplo promo**: "Te extrañamos: 40% OFF + Upgrade gratis"
+
+#### D. Nuevos Clientes
+- **Segmento**: Primera reserva
+- **Beneficios**:
+  - Descuento bienvenida: 15% OFF
+  - Welcome pack (snacks, agua, mapa)
+  - Tour guiado por el hotel
+- **Ejemplo promo**: "Primera reserva: 15% OFF + Welcome pack"
+
+---
+
+### 5️⃣ PROMOCIONES CONDICIONALES
+
+#### A. Por Cantidad de Personas
+- **Ejemplos**:
+  - "Grupos de 5+: 20% descuento"
+  - "Reserva 3 habitaciones: 4ta gratis"
+
+#### B. Por Tipo de Viaje
+- **Negocios**:
+  - "Viajes corporativos: Salón de reuniones gratis"
+  - "Check-in express y late check-out"
+- **Bodas**:
+  - "Paquete boda: 30% en salón de eventos"
+  - "Suite nupcial + Decoración incluida"
+
+#### C. Por Forma de Pago
+- **Ejemplos**:
+  - "Pago anticipado completo: 10% descuento adicional"
+  - "Pago en efectivo: 5% descuento"
+
+---
+
+## 🗂️ ANÁLISIS DE TU BASE DE DATOS ACTUAL
+
+### ❌ PROBLEMAS DETECTADOS
+
+#### 1. Tabla `descuentos` (innecesaria/redundante)
+```sql
+-- Esta tabla NO se usa correctamente
+-- Debería estar integrada en `promos`
+```
+**Recomendación**: Eliminar o integrar en `promos`
+
+#### 2. Tabla `detalle_promos` (campos obligatorios incorrectos)
+```sql
+-- ❌ PROBLEMA: Todas las FK son NOT NULL
+$table->foreignId('tipo_habitacion_id')->constrained('tipo_habitacions');
+$table->foreignId('servicio_id')->constrained('servicios');
+$table->foreignId('platillo_id')->constrained('platillos');
+
+-- ✅ SOLUCIÓN: Deben ser NULLABLE
+```
+
+#### 3. Tabla `promos` (campos faltantes)
+```sql
+-- ❌ Falta:
+- segmento_id (para promociones dirigidas)
+- tipo_promo (descuento_porcentual, paquete, etc.)
+- codigo_promocional (para cupones)
+- condiciones (minimo_noches, minimo_personas, etc.)
+```
+
+---
+
+## 🔧 MIGRACIONES CORREGIDAS
+
+### 1. Modificar `promos` table

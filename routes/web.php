@@ -267,3 +267,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kmeans/logs', [ClasificacionClienteController::class, 'verLogs'])
         ->name('kmeans.logs');
 });
+
+use App\Http\Controllers\PromoController;
+
+// Rutas de Promociones
+Route::middleware(['auth'])->group(function () {
+    Route::resource('promos', PromoController::class);
+    Route::post('promos/{promo}/toggle', [PromoController::class, 'toggleEstado'])->name('promos.toggle');
+    Route::post('promos/validar-codigo', [PromoController::class, 'validarCodigo'])->name('promos.validar-codigo');
+    Route::get('promos/disponibles', [PromoController::class, 'promocionesDisponibles'])->name('promos.disponibles');
+});

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             CheckinSeeder::class,
             CuentaSeeder::class,
             SegmentoSeeder::class,
+            PromoSeeder::class,
         ]);
     }
 }
