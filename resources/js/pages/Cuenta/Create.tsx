@@ -58,7 +58,7 @@ export default function CreateCuenta({ checkin }: Props) {
     const handleSubmit = () => {
         setIsSubmitting(true);
         router.post(
-            route('recepcion.cuentas.store'),
+            route('cuentas.store'),
             { checkin_id: checkin.id },
             {
                 onFinish: () => setIsSubmitting(false),
@@ -79,7 +79,7 @@ export default function CreateCuenta({ checkin }: Props) {
             <Head title="Crear Cuenta" />
 
             <div className="py-8 lg:py-12">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     <div className="flex items-center gap-4">
                         <Link href={route('recepcion.checkins.show', checkin.id)}>
                             <Button variant="outline" size="icon">

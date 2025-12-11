@@ -52,20 +52,26 @@ class CuentaController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Request $request)
+    public function create(Checkin $checkin)
     {
-        $checkinId = $request->query('checkin_id');
         
-        if (!$checkinId) {
-            return redirect()->route('recepcion.checkins.index')
-                ->with('error', 'Se requiere un check-in para crear una cuenta.');
-        }
+        //$checkinId = $request->query('checkin');
+        
+        // if (!$checkinId) {
+        //     return redirect()->route('recepcion.checkins.index')
+        //         ->with('error', 'Se requiere un check-in para crear una cuenta.');
+        // }
 
-        $checkin = Checkin::with([
+        // $checkin = Checkin::with([
+        //     'cliente.usuario',
+        //     'habitacionEvento.tipoHabitacion',
+        //     'cuenta'
+        // ])->findOrFail($checkinId);
+        $checkin->load([
             'cliente.usuario',
             'habitacionEvento.tipoHabitacion',
             'cuenta'
-        ])->findOrFail($checkinId);
+        ]);
 
         // Verificar si ya tiene cuenta
         if ($checkin->cuenta) {
@@ -144,7 +150,7 @@ class CuentaController extends Controller
             ]);
 
         // Obtener platillos disponibles
-        $platillos = Platillo::where('estado', 'activo')
+        $platillos = Platillo::where('estado', 'disponible')
             ->get()
             ->map(fn($platillo) => [
                 'id' => $platillo->id,
@@ -250,7 +256,8 @@ class CuentaController extends Controller
                 $transaccionData = [
                     'cuenta_id' => $cuenta->id,
                     'cantidad' => $item['cantidad'],
-                    'estado' => 'pendiente',
+                    //'estado' => 'pendiente',
+                    'estado' => 'confirmada', //esta mal pero para rapidez
                 ];
 
                 if ($item['tipo'] === 'servicio') {
@@ -307,6 +314,56 @@ class CuentaController extends Controller
         return redirect()->back()
             ->with('success', 'Transacción eliminada correctamente.');
     }
+
+
+    public function cancelarTransaccion(Cuenta $cuenta, Transaccion $transaccion)
+    {
+        // 1. Verificar la integridad de la relación
+        if ($transaccion->cuenta_id !== $cuenta->id) {
+            return redirect()->back()
+                ->with('error', 'La transacción no pertenece a esta cuenta.');
+        }
+
+        // 2. Verificar el estado de la Transacción (solo cancelar si está activa)
+        if ($transaccion->estado === 'cancelada') {
+            return redirect()->back()
+                ->with('info', 'Esta transacción ya ha sido cancelada.');
+        }
+        
+        // 3. Verificar el estado de la Cuenta (solo permitir cancelación si la cuenta NO está pagada)
+        if ($cuenta->estado === 'pagada') {
+            // Esto es crucial para mantener la integridad de la factura o el cierre contable.
+            return redirect()->back()
+                ->with('error', 'No se pueden cancelar transacciones de una cuenta ya pagada o cerrada.');
+        }
+
+        // 4. Calcular el monto a restar (usando el subtotal, que ya fue calculado al registrarla)
+        $montoRestar = $transaccion->subtotal; // Usamos el subtotal ya registrado en la BD.
+
+        DB::transaction(function () use ($cuenta, $transaccion, $montoRestar) {
+            
+            // 4.1. CAMBIO CLAVE: Actualizar el estado de la transacción a 'cancelada'
+            $transaccion->estado = 'cancelada';
+            $transaccion->save();
+
+            // 4.2. Actualizar montos de la cuenta
+            $cuenta->monto_total -= $montoRestar;
+            
+            // Recalcular el saldo. Asumimos que el saldo es siempre (total - pagado)
+            $cuenta->saldo = $cuenta->monto_total - $cuenta->monto_pagado;
+            
+            // Opcional: Si el monto total es cero después de la cancelación, puedes cambiar el estado de la cuenta.
+            
+            $cuenta->save();
+        });
+
+        return redirect()->back()
+            ->with('success', 'Transacción cancelada correctamente. El monto se ha ajustado del total.');
+    }
+
+
+
+    
 
 }
     

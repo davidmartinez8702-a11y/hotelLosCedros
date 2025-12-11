@@ -86,6 +86,7 @@ interface HuespedAsignado {
     cliente_id: number;
     nombre: string;
     email: string;
+    cuenta_id: number | null ;
 }
 
 interface HabitacionOcupadaPorReserva {

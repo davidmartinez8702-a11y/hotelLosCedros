@@ -66,6 +66,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@radix-ui/react-alert-dialog';
+import { AlertDialogFooter, AlertDialogHeader } from '@/shared/ui/alert-dialog';
 
 // --- Interfaces ---
 interface Cliente {
@@ -353,7 +354,7 @@ export default function CuentaShow({ cuenta, servicios, platillos }: Props) {
 
         setProcessing(true);
         router.post(
-            route('recepcion.cuentas.transacciones.agregar', cuenta.id),
+            route('cuentas.transacciones.agregar', cuenta.id),
             {
                 items: carrito.map(item => ({
                     tipo: item.tipo,
@@ -373,7 +374,7 @@ export default function CuentaShow({ cuenta, servicios, platillos }: Props) {
 
     const handleEliminarTransaccion = (transaccionId: number) => {
         router.delete(
-            route('recepcion.cuentas.transacciones.eliminar', [cuenta.id, transaccionId])
+            route('cuentas.transacciones.eliminar', [cuenta.id, transaccionId])
         );
     };
 
@@ -874,7 +875,7 @@ export default function CuentaShow({ cuenta, servicios, platillos }: Props) {
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
                                                                 </AlertDialogTrigger>
-                                                                {/* <AlertDialogContent>
+                                                                <AlertDialogContent>
                                                                     <AlertDialogHeader>
                                                                         <AlertDialogTitle>
                                                                             ¿Eliminar transacción?
@@ -893,7 +894,7 @@ export default function CuentaShow({ cuenta, servicios, platillos }: Props) {
                                                                             Eliminar
                                                                         </AlertDialogAction>
                                                                     </AlertDialogFooter>
-                                                                </AlertDialogContent> */}
+                                                                </AlertDialogContent>
                                                             </AlertDialog>
                                                         </td>
                                                     )}

@@ -162,12 +162,16 @@ Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(func
     // Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
     Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
     Route::post('/checkins/{reserva}/store', [CheckinController::class, 'store'])->name('checkins.store');
+    Route::delete('/checkins/{checkin}', [CheckinController::class, 'destroy'])->name('checkins.destroy');
+
 });
 Route::prefix('cuentas')->name('cuentas.')->group(function () {
     Route::get('/', [CuentaController::class, 'index'])->name('index');
-    Route::get('/create', [CuentaController::class, 'create'])->name('create');
-    Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
+    Route::get('/{checkin}/create', [CuentaController::class, 'create'])->name('create');
+    // Route::post('/{checkin}/store', [CuentaController::class, 'store'])->name('store');
     Route::post('/', [CuentaController::class, 'store'])->name('store');
+    Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
+    
     // Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
     
     // Rutas adicionales
@@ -177,6 +181,20 @@ Route::prefix('cuentas')->name('cuentas.')->group(function () {
 
 // En tu archivo de rutas (dentro del grupo 'recepcion')
 Route::get('/clientes/search', [CheckinController::class, 'searchClientes'])->name('clientes.search');
+
+
+Route::prefix('habitaciones')->name('habitaciones.')->group(function(){
+    // Route::get('/', [HabitacionEventoController::class, 'index'])->name('index');
+    // Route::get('/create', [HabitacionEventoController::class, 'create'])->name('create');
+    // Route::post('/', [HabitacionEventoController::class, 'store'])->name('store');
+    // Route::get('/{habitacion}', [HabitacionEventoController::class, 'show'])->name('show');
+    // Route::get('/{habitacion}/edit', [HabitacionEventoController::class, 'edit'])->name('edit');
+    // Route::put('/{habitacion}', [HabitacionEventoController::class, 'update'])->name('update');
+    // Route::delete('/{habitacion}', [HabitacionEventoController::class, 'destroy'])->name('destroy');
+
+    
+    Route::put('/estado', [CheckinController::class, 'updateHabitacionEstado'])->name('updateEstado');
+});
 
 // Rutas para recepción de reservas
 // Route::middleware(['auth'])->group(function () {

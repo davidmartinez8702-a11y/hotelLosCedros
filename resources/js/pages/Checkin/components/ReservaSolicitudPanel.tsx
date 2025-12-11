@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { ClipboardList, Hotel, KeyRound, Save, User, X } from 'lucide-react';
+import { ClipboardList, Eye, Hotel, KeyRound, Receipt, Save, User, X } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Asegúrate de importar la función cn (clsx/cva)
 import { Button } from '@/shared/ui/button';
 import { router } from '@inertiajs/react';
@@ -23,6 +23,7 @@ interface HuespedAsignado {
     cliente_id: number;
     nombre: string;
     email: string;
+    cuenta_id: number | null;
 }
 
 interface HabitacionSolicitada {
@@ -48,10 +49,12 @@ interface HabitacionOcupadaPorReserva {
     huespedes_asignados: HuespedAsignado[];
 }
 const ESTADO_HABITACION_OPTIONS = [
-    { value: 'activo', label: 'Disponible (Activo)', color: 'bg-green-500' },
-    { value: 'ocupado', label: 'Ocupado', color: 'bg-red-500' },
+    { value: 'disponible', label: 'Disponible (Activo)', color: 'bg-green-500' },
+    { value: 'ocupada', label: 'Ocupada', color: 'bg-red-500' },
     { value: 'limpieza', label: 'Limpieza', color: 'bg-yellow-500' },
     { value: 'mantenimiento', label: 'Mantenimiento', color: 'bg-slate-500' },
+    { value: 'bloqueada', label: 'Bloqueada', color: 'bg-slate-500' },
+    { value: 'fuera_de_servicio', label: 'Fuera de Servicio', color: 'bg-slate-500' },
 ];
 
 interface ClienteReservaPrincipal {
@@ -76,43 +79,50 @@ export default function ReservaSolicitudesPanel({ reserva, habitacionesSolicitad
             // Asumiendo que Checkout es una eliminación LÓGICA (cierra el check-in)
             router.delete(route('recepcion.checkins.destroy', checkinId), {
                 preserveScroll: true,
-                onSuccess: () => alert(`Checkout de ${nombreCliente} registrado.`),
+                onSuccess: () => alert(`Checkout de ${nombreCliente} eliminado.`),
             });
         }
+    };
+    const handleVerCheckin = (checkinId: number) => {
+        router.get(route('recepcion.checkins.show', checkinId), {
+            preserveScroll: true,
+        });
     };
     const handleGuardarEstados = async () => {
         if (Object.keys(estadoChanges).length === 0) return;
         
         setIsSaving(true);
         
-        // **ESTO REQUERIRÁ UN NUEVO ENDPOINT POST/PUT EN EL BACKEND**
-        // Ejemplo de endpoint: PUT /recepcion/habitaciones/estado
-        
-        console.log("Enviando cambios de estado:", estadoChanges);
-        
-        try {
-            // Aquí iría tu llamada AXIOS o Inertia POST/PUT
-            // Ejemplo:
-            // await router.put(route('recepcion.habitaciones.updateEstado'), { estados: estadoChanges });
-            
-            // Simulación de éxito:
-            await new Promise(resolve => setTimeout(resolve, 500)); 
-            
-            // Actualizar el estado local de las habitaciones (solo si la llamada Inertia recarga la página)
-            // Si usas Inertia.js, un éxito aquí generalmente recargará la página con la nueva prop.
-            
-            setEstadoChanges({}); // Limpiar cambios pendientes
-            alert("Estados de habitación actualizados con éxito!");
-            // Si el backend no recarga, podrías forzar una recarga o actualizar las props.
-            // router.reload({ only: ['habitacionesDisponibles'] }); 
+        // La clave 'estados' debe ser el objeto { ID: NUEVO_ESTADO }
+        const payload = {
+            estados: estadoChanges, 
+        };
 
-        } catch (error) {
-            console.error("Error al guardar estados:", error);
-            alert("Error al actualizar estados.");
-        } finally {
-            setIsSaving(false);
-        }
+        // Usamos router.put o router.post con el método PUT
+        router.put(
+            route('habitaciones.updateEstado'),
+            payload,
+            {
+                preserveScroll: true,
+                preserveState: true,
+                
+                onSuccess: () => {
+                    // Al éxito, Inertia recargará la página con los nuevos estados.
+                    setEstadoChanges({}); // Limpiar cambios pendientes
+                    alert("Estados de habitación actualizados con éxito!");
+                },
+                onError: (errors) => {
+                    // Manejar errores de validación (ej. ID de habitación inexistente)
+                    console.error("Error de validación:", errors);
+                    alert("Error al guardar: " + (errors.estados || errors.general || "Verifica la consola."));
+                },
+                onFinish: () => {
+                    setIsSaving(false);
+                }
+            }
+        );
     };
+
     const panelClasses = cn(
         // Fondo base ligero, que usa la variable 'muted'
         "bg-muted/50", 
@@ -231,26 +241,52 @@ export default function ReservaSolicitudesPanel({ reserva, habitacionesSolicitad
                                         <User className="h-4 w-4 text-primary/80" /> Huéspedes Activos:
                                     </h4>
                                     
-                                    {hab.huespedes_asignados.map((huesped) => (
+                                  {hab.huespedes_asignados.map((huesped) => {
+                                    const tieneCuenta = huesped.cuenta_id !== null;
+
+                                    return (
                                         <div key={huesped.checkin_id} className="flex justify-between items-center bg-gray-50 p-2 rounded-md border">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-medium">{huesped.nombre}</span>
                                                 <span className="text-xs text-muted-foreground">{huesped.email}</span>
                                             </div>
                                             
-                                            {/* Botón de Acción: Eliminar/Checkout */}
-                                            <Button 
-                                                type="button" 
-                                                variant="ghost" 
-                                                size="sm"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => handleEliminarCheckin(huesped.checkin_id, huesped.nombre)}
-                                            >
-                                                <X className="h-4 w-4 mr-1" />
-                                                Checkout
-                                            </Button>
+                                            <div className="flex gap-1">
+                                                {/* Botón de Ver Checkin (Para ver si hay cuenta) */}
+                                                <Button 
+                                                    type="button" 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                                    onClick={() => handleVerCheckin(huesped.checkin_id)}
+                                                    title={tieneCuenta ? `Ver Cuenta #${huesped.cuenta_id}` : "Ver Detalle"}
+                                                >
+                                                    {/* Si tiene cuenta, mostramos el ícono de recibo */}
+                                                    {tieneCuenta ? <Receipt className="h-4 w-4" /> : <Eye className="h-4 w-4" />} 
+                                                </Button>
+
+{/*                                                
+                                                {!tieneCuenta ? (
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => handleEliminarCheckin(huesped.checkin_id, huesped.nombre)}
+                                                        title="Finalizar Check-in (Checkout)"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                ) : (
+                                                    // Opcional: Mostrar un botón deshabilitado o una insignia
+                                                    <Badge variant="secondary" className="text-xs self-center cursor-default" title="Checkout bloqueado por cuenta activa">
+                                                        Cta. Activa
+                                                    </Badge>
+                                                )} */}
+                                            </div>
                                         </div>
-                                    ))}
+                                    );
+                                })}
                                 </div>
                                 <Separator className="my-3" />
                                 <select

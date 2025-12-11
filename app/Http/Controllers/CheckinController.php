@@ -215,6 +215,7 @@ class CheckinController extends Controller
                         'cliente_id' => $checkin->cliente_id,
                         'nombre' => $checkin->cliente->usuario->name,
                         'email' => $checkin->cliente->usuario->email,
+                        'cuenta_id' => $checkin->cuenta->id ?? null,
                     ])->toArray(),
                     
                     'num_huespedes_activos' => $checkinsPorHabitacion->count(),
@@ -242,25 +243,38 @@ class CheckinController extends Controller
 
     public function updateHabitacionEstado(Request $request)
     {
-        // Validar el formato del array de cambios
+        // dd($request->all());
         $validated = $request->validate([
             'estados' => 'required|array',
-            'estados.*' => 'required|in:activo,ocupado,limpieza,mantenimiento,inactivo',
-            'estados.*' => 'required|exists:habitacion_eventos,id', // Se valida que la clave sea un ID existente
+            'estados.*' => [
+                'required',
+                // Solo validamos que el VALOR (ej. 'ocupado', 'limpieza') sea un estado permitido
+                Rule::in(['disponible', 'ocupada', 'limpieza', 'mantenimiento', 'bloqueada', 'fuera_de_servicio']),
+            ],
+        ], [
+            'estados.required' => 'El array de estados es obligatorio.',
+            'estados.*.in' => 'Uno o más estados de habitación no son válidos.',
         ]);
-
-        // Usar transacción para el cambio masivo
+        
+        // $habitacionIds = array_keys($validated['estados']);
+        // 3. Ejecución Transaccional (Esta parte está bien)
         DB::beginTransaction();
         
         try {
             foreach ($validated['estados'] as $habitacionId => $nuevoEstado) {
-                HabitacionEvento::where('id', $habitacionId)
-                    ->update(['estado' => $nuevoEstado]);
+                
+                // HabitacionEvento::where('id', $habitacionId)
+                //     ->update(['estado' => $nuevoEstado]);
+                $estadoNormalizado = strtolower($nuevoEstado); 
+            
+                // Usamos DB::table para reforzar la seguridad del binding (si el error persiste)
+                DB::table('habitacion_eventos')
+                    ->where('id', $habitacionId)
+                    ->update(['estado' => $estadoNormalizado]);
             }
             
             DB::commit();
 
-            // Redirigir de vuelta o retornar una respuesta de éxito
             return back()->with('success', 'Estados de habitaciones actualizados correctamente.');
 
         } catch (Exception $e) {
@@ -558,11 +572,67 @@ class CheckinController extends Controller
             ->with('success', 'Check-in actualizado correctamente.');
     }
 
+
+
+   
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Checkin $checkin)
     {
-        //
+        // 1. Cargar la relación 'cuenta' para la validación
+        $checkin->load('cuenta');
+        
+        // 2. Bloquear la eliminación si tiene cuenta
+        if ($checkin->cuenta) {
+            
+            return back()->with('error', 
+                'No se puede finalizar (checkout) ni eliminar este check-in porque tiene la Cuenta #' . $checkin->cuenta->id . ' asociada. Por favor, salde la cuenta primero.'
+            );
+        }
+
+        // 3. Bloquear si ya está finalizado (opcional, pero útil)
+        if ($checkin->fecha_salida) {
+            return back()->with('info', 'Este check-in ya ha sido finalizado.');
+        }
+
+        // --- Ejecutar el Checkout (Actualización) ---
+
+        // La fecha de salida se establece ahora
+        $fechaSalida = now(); 
+        
+        DB::beginTransaction();
+
+        try {
+            // Actualizar el Check-in (Checkout)
+            $checkin->fecha_salida = $fechaSalida;
+            $checkin->save();
+
+            // 4. Lógica de Liberación de Habitación
+            // Solo liberar si NO quedan otros huéspedes activos en la misma habitación.
+            
+            $habitacionId = $checkin->habitacion_evento_id;
+            
+            $huespedesActivosRestantes = Checkin::where('habitacion_evento_id', $habitacionId)
+                ->whereNull('fecha_salida')
+                ->where('id', '!=', $checkin->id) // Excluir al huésped que acaba de salir
+                ->count();
+            
+            if ($huespedesActivosRestantes === 0) {
+                // Si no queda nadie, liberar la habitación para limpieza.
+                HabitacionEvento::where('id', $habitacionId)
+                    ->update(['estado' => 'limpieza']); // O 'activo', según tu flujo
+            }
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Checkout realizado con éxito. Habitación liberada para revisión (si aplica).');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['general' => 'Error al procesar el Checkout: ' . $e->getMessage()]);
+        }
     }
 }

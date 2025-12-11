@@ -164,6 +164,15 @@ export default function CheckinShow({ checkin }: Props) {
                                     </Button>
                                 </Link>
                             )}
+                             {!tieneCuenta && (
+                                
+                                <Link href={route("cuentas.create", { checkin: checkin.id })}>
+                                    <Button>
+                                        <Receipt className="mr-2 h-4 w-4" />
+                                        Crear Cuenta
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -418,27 +427,17 @@ export default function CheckinShow({ checkin }: Props) {
                     )}
 
                     {/* Botones de acción */}
-                    <div className="flex justify-end gap-4">
-                        <Link href={route("recepcion.checkins.index")}>
-                            <Button variant="outline">
-                                Volver al listado
-                            </Button>
-                        </Link>
-                        <Link href={route("recepcion.checkins.edit", checkin.id)}>
-                            <Button variant="secondary">
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar Check-in
-                            </Button>
-                        </Link>
-                        {/* {!tieneCuenta && (
-                            <Link href={route("recepcion.cuentas.create", { checkin_id: checkin.id })}>
+                    {/* <div className="flex justify-end gap-4">
+                       
+                        {!tieneCuenta && (
+                            <Link href={route("cuentas.create", { checkin: checkin.id })}>
                                 <Button>
                                     <Receipt className="mr-2 h-4 w-4" />
                                     Crear Cuenta
                                 </Button>
                             </Link>
-                        )} */}
-                    </div>
+                        )}
+                    </div> */}
                 </div>
             </div>
         </AppLayout>
