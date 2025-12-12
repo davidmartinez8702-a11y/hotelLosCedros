@@ -181,32 +181,31 @@ class ReservaController extends Controller
 
     public function misReservas(Request $request)
     {
-        // 1. Obtener ID del Cliente Autenticado (Cliente::class)
+        // 1. Obtener ID del Cliente Autenticado
         $usuarioAutenticado = Auth::user();
         
-        // Necesitamos cargar la relación 'cliente' si el usuario autenticado es un modelo User.
-        // Asumiendo que User tiene una relación hasOne(Cliente::class)
-        $usuarioAutenticado->load('cliente.usuario'); 
+        // Cargar la relación 'cliente' del usuario autenticado
+        $usuarioAutenticado->load('cliente'); 
         
         $clienteAutenticado = $usuarioAutenticado->cliente;
-        $clienteAutenticadoId = $clienteAutenticado->id; // El ID del cliente (que es igual al User ID)
 
-        if (!$clienteAutenticadoId) {
-            return Inertia::render('Error', ['status' => 403, 'message' => 'Acceso denegado o usuario no es cliente.']);
+        if (!$clienteAutenticado) {
+            abort(403, 'Acceso denegado o usuario no es cliente.');
         }
 
-        // 3. Consulta Base: Filtrar por el cliente_id
-        $query = Reserva::with(['cliente.usuario'])
-            ->where('id', $clienteAutenticadoId);
+        $clienteAutenticadoId = $clienteAutenticado->id;
 
-        // 4. Aplicar Filtros (Integrados del método index)
+        // 3. ✅ CORRECCIÓN: Filtrar por cliente_id, NO por id
+        $query = Reserva::with(['cliente.usuario', 'promo'])
+            ->where('cliente_id', $clienteAutenticadoId); // ← CAMBIO AQUÍ
+
+        // 4. Aplicar Filtros
         
-        // Filtro por búsqueda (Búsqueda en las propiedades de la reserva, no el nombre del cliente, ¡que ya está filtrado!)
-        // En el contexto del cliente, la búsqueda puede ser por tipo de viaje o ID
+        // Filtro por búsqueda (ID de reserva o tipo de viaje)
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('id', $request->search)
-                ->orWhere('tipo_viaje', 'like', "%{$request->search}%");
+                $q->where('id', 'like', "%{$request->search}%")
+                  ->orWhere('tipo_viaje', 'like', "%{$request->search}%");
             });
         }
 
@@ -228,22 +227,25 @@ class ReservaController extends Controller
         // 5. Paginar y Mapear Datos
         $reservas = $query->latest('fecha_reserva')->paginate(10)->through(fn($reserva) => [
             'id' => $reserva->id,
-            'fecha_reserva' => $reserva->fecha_reserva,
+            'fecha_reserva' => Carbon::parse($reserva->fecha_reserva)->format('Y-m-d'),
             'dias_estadia' => $reserva->dias_estadia,
             'estado' => $reserva->estado,
             'tipo_reserva' => $reserva->tipo_reserva,
             'tipo_viaje' => $reserva->tipo_viaje,
             'pago_inicial' => $reserva->pago_inicial,
             'monto_total' => $reserva->monto_total,
+            'promo' => $reserva->promo ? [
+                'id' => $reserva->promo->id,
+                'nombre' => $reserva->promo->nombre,
+            ] : null,
+            'created_at' => $reserva->created_at->format('Y-m-d H:i:s'),
         ]);
 
-        // 6. Renderizar a la vista del cliente
-        // Aseguramos que pasamos todos los filtros necesarios para que el frontend los reciba.
+        // 6. Renderizar vista del cliente
         return Inertia::render('Reservas/Cliente/MisReservasIndex', [
             'reservas' => $reservas,
             'filters' => $request->only(['search', 'estado', 'tipo_reserva', 'tipo_viaje']),
             'cliente_nombre' => $clienteAutenticado->usuario->name, 
-            // Nota: Asegúrate de que $clienteAutenticado->usuario exista, por eso cargamos la relación arriba.
         ]);
     }
 
