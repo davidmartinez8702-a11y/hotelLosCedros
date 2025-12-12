@@ -4,9 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Cliente;
+use App\Models\Segmento;
 use Carbon\Carbon;
+use Faker\Factory as Faker;
 use Exception;
 
 class UserClienteSeeder extends Seeder
@@ -16,256 +19,114 @@ class UserClienteSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('👥 Iniciando seeder de Usuarios y Clientes...');
+        $this->command->info('👥 Iniciando seeder de Usuarios-Clientes...');
+        $this->command->newLine();
+
+        // PARTE 1: Usuarios específicos (algunos SÍ son clientes, otros NO)
+        $this->crearUsuariosEspecificos();
+
+        // PARTE 2: Usuarios masivos (TODOS son clientes)
+        $this->generarUsuariosClientesMasivos();
+
+        $this->command->newLine();
+        $this->command->info('🎉 Seeder de Usuarios y Clientes completado!');
+    }
+
+    /**
+     * Crear usuarios específicos (testing/staff)
+     * ✅ Algunos son clientes, otros NO (admins, recepcionistas)
+     */
+    private function crearUsuariosEspecificos(): void
+    {
+        $this->command->info('📋 Verificando usuarios específicos (VIP/Testing/Staff)...');
         $this->command->newLine();
 
         $usersData = [
+            // ============================
+            // CLIENTES (SÍ tienen registro en tabla clientes)
+            // ============================
             [
-                'name'               => 'Ana Gómez',
-                'username'           => 'ana_gomez',
-                'edad'               => 28,
-                'sexo'               => 'F',
-                'telefono'           => '555-1234',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'anagomez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
+                'name' => 'Ana Gómez',
+                'username' => 'ana_gomez',
+                'edad' => 28,
+                'sexo' => 'F',
+                'telefono' => '555-1234',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'anagomez@gmail.com',
+                'password' => Hash::make('123456789'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => true, // ✅ SÍ es cliente
             ],
             [
-                'name'               => 'Luis Martínez',
-                'username'           => 'luis_martinez',
-                'edad'               => 35,
-                'sexo'               => 'M',
-                'telefono'           => '555-5678',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'luismartinez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
+                'name' => 'Luis Martínez',
+                'username' => 'luis_martinez',
+                'edad' => 35,
+                'sexo' => 'M',
+                'telefono' => '555-5678',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'luismartinez@gmail.com',
+                'password' => Hash::make('123456789'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => true, // ✅ SÍ es cliente
             ],
             [
-                'name'               => 'María Pérez',
-                'username'           => 'maria_perez',
-                'edad'               => 22,
-                'sexo'               => 'F',
-                'telefono'           => '555-9012',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'mariaperez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
+                'name' => 'María Pérez',
+                'username' => 'maria_perez',
+                'edad' => 22,
+                'sexo' => 'F',
+                'telefono' => '555-9012',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'mariaperez@gmail.com',
+                'password' => Hash::make('123456789'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => true, // ✅ SÍ es cliente
             ],
             [
-                'name'               => 'Roberto Sánchez',
-                'username'           => 'roberto_sanchez',
-                'edad'               => 42,
-                'sexo'               => 'M',
-                'telefono'           => '555-1001',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'robertosanchez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
+                'name' => 'Roberto Sánchez',
+                'username' => 'roberto_sanchez',
+                'edad' => 42,
+                'sexo' => 'M',
+                'telefono' => '555-1001',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'robertosanchez@gmail.com',
+                'password' => Hash::make('123456789'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => true, // ✅ SÍ es cliente
+            ],
+
+            // ============================
+            // STAFF (NO son clientes, solo usuarios)
+            // ============================
+            [
+                'name' => 'Admin Principal',
+                'username' => 'admin',
+                'edad' => 35,
+                'sexo' => 'M',
+                'telefono' => '555-0000',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'admin@hotel.com',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => false, // ❌ NO es cliente (es admin)
             ],
             [
-                'name'               => 'Carmen López',
-                'username'           => 'carmen_lopez',
-                'edad'               => 31,
-                'sexo'               => 'F',
-                'telefono'           => '555-1002',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'carmenlopez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Fernando García',
-                'username'           => 'fernando_garcia',
-                'edad'               => 29,
-                'sexo'               => 'M',
-                'telefono'           => '555-1003',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'extranjero',
-                'email'              => 'fernandogarcia@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Patricia Rodríguez',
-                'username'           => 'patricia_rodriguez',
-                'edad'               => 38,
-                'sexo'               => 'F',
-                'telefono'           => '555-1004',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'patriciarodriguez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Diego Hernández',
-                'username'           => 'diego_hernandez',
-                'edad'               => 45,
-                'sexo'               => 'M',
-                'telefono'           => '555-1005',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'extranjero',
-                'email'              => 'diegohernandez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Lucía Torres',
-                'username'           => 'lucia_torres',
-                'edad'               => 26,
-                'sexo'               => 'F',
-                'telefono'           => '555-1006',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'luciatorres@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Andrés Vargas',
-                'username'           => 'andres_vargas',
-                'edad'               => 33,
-                'sexo'               => 'M',
-                'telefono'           => '555-1007',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'andresvargas@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Sofía Ramírez',
-                'username'           => 'sofia_ramirez',
-                'edad'               => 27,
-                'sexo'               => 'F',
-                'telefono'           => '555-1008',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'extranjero',
-                'email'              => 'sofiaramirez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Miguel Castro',
-                'username'           => 'miguel_castro',
-                'edad'               => 50,
-                'sexo'               => 'M',
-                'telefono'           => '555-1009',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'miguelcastro@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Valentina Morales',
-                'username'           => 'valentina_morales',
-                'edad'               => 24,
-                'sexo'               => 'F',
-                'telefono'           => '555-1010',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'valentinamorales@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Javier Mendoza',
-                'username'           => 'javier_mendoza',
-                'edad'               => 36,
-                'sexo'               => 'M',
-                'telefono'           => '555-1011',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'extranjero',
-                'email'              => 'javiermendoza@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Isabella Flores',
-                'username'           => 'isabella_flores',
-                'edad'               => 30,
-                'sexo'               => 'F',
-                'telefono'           => '555-1012',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'isabellaflores@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Ricardo Ortiz',
-                'username'           => 'ricardo_ortiz',
-                'edad'               => 41,
-                'sexo'               => 'M',
-                'telefono'           => '555-1013',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'ricardoortiz@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Camila Jiménez',
-                'username'           => 'camila_jimenez',
-                'edad'               => 23,
-                'sexo'               => 'F',
-                'telefono'           => '555-1014',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'extranjero',
-                'email'              => 'camilajimenez@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
-            ],
-            [
-                'name'               => 'Eduardo Reyes',
-                'username'           => 'eduardo_reyes',
-                'edad'               => 48,
-                'sexo'               => 'M',
-                'telefono'           => '555-1015',
-                'profile_icon'       => null,
-                'tipo_nacionalidad'  => 'nacional',
-                'email'              => 'eduardoreyes@gmail.com',
-                'email_verified_at'  => Carbon::now(),
-                'password'           => Hash::make('123456789'),
-                'es_cliente'         => true,
+                'name' => 'Recepcionista Principal',
+                'username' => 'recepcion',
+                'edad' => 28,
+                'sexo' => 'F',
+                'telefono' => '555-0001',
+                'tipo_nacionalidad' => 'nacional',
+                'email' => 'recepcion@hotel.com',
+                'password' => Hash::make('recepcion123'),
+                'email_verified_at' => Carbon::now(),
+                'es_cliente' => false, // ❌ NO es cliente (es staff)
             ],
         ];
 
         $creados = 0;
         $yaExisten = 0;
-        $errores = 0;
-        $total = count($usersData);
 
-        $this->command->info("📋 Procesando {$total} usuarios...");
-        $this->command->newLine();
-
-        foreach ($usersData as $index => $data) {
-            $numero = $index + 1;
+        foreach ($usersData as $data) {
             $esCliente = $data['es_cliente'] ?? false;
             unset($data['es_cliente']);
 
@@ -274,38 +135,243 @@ class UserClienteSeeder extends Seeder
 
                 if ($userExistente) {
                     $yaExisten++;
-                    $this->command->warn("   🔄 [{$numero}/{$total}] Ya existe: {$data['name']} ({$data['email']})");
+                    $tipoUsuario = $esCliente ? '👤 Cliente' : '👨‍💼 Staff';
+                    $this->command->warn("   🔄 Ya existe: {$data['name']} ({$tipoUsuario})");
                     
+                    // ✅ Si debe ser cliente pero no tiene registro, crearlo
                     if ($esCliente && !Cliente::find($userExistente->id)) {
                         Cliente::create(['id' => $userExistente->id]);
                         $this->command->info("      └── ✅ Cliente vinculado");
                     }
                 } else {
+                    // Crear nuevo usuario
                     $user = User::create($data);
                     $creados++;
-                    $this->command->info("   ✅ [{$numero}/{$total}] Creado: {$data['name']} ({$data['email']})");
+                    $tipoUsuario = $esCliente ? '👤 Cliente' : '👨‍💼 Staff';
+                    $this->command->info("   ✅ Creado: {$data['name']} ({$tipoUsuario})");
 
+                    // ✅ Solo crear cliente si corresponde
                     if ($esCliente) {
                         Cliente::create(['id' => $user->id]);
-                        $this->command->info("      └── 👤 Cliente vinculado");
+                        $this->command->info("      └── 👤 Registro en tabla clientes");
                     }
                 }
             } catch (Exception $e) {
-                $errores++;
-                $this->command->error("   ❌ [{$numero}/{$total}] Error: {$data['name']} - {$e->getMessage()}");
+                $this->command->error("   ❌ Error: {$data['name']} - {$e->getMessage()}");
             }
         }
 
-        // Resumen
+        $this->command->info("   📦 Específicos: {$creados} creados, {$yaExisten} ya existían");
+        $this->command->newLine();
+    }
+
+    /**
+     * Generar usuarios-clientes masivos (TODOS son clientes)
+     */
+    private function generarUsuariosClientesMasivos(): void
+    {
+        $faker = Faker::create('es_ES');
+        
+        // ✅ CONFIGURACIÓN: 2000 usuarios-clientes nuevos
+        $cantidadUsuarios = 2000;
+        $batchSize = 500;
+        $creados = 0;
+        $errores = 0;
+
+        $this->command->info("📋 Generando {$cantidadUsuarios} usuarios-clientes masivos...");
+        $this->command->info("   ℹ️  Los segmentos se asignarán automáticamente por el sistema");
+        $this->command->newLine();
+
+        // Datos bolivianos realistas
+        $nombresBolivianos = [
+            'Juan', 'María', 'José', 'Carlos', 'Luis', 'Ana', 'Pedro', 'Rosa',
+            'Jorge', 'Carmen', 'Miguel', 'Isabel', 'Roberto', 'Patricia', 'Daniel',
+            'Gabriela', 'Fernando', 'Laura', 'Ricardo', 'Silvia', 'Andrés', 'Claudia',
+            'Diego', 'Marcela', 'Gustavo', 'Daniela', 'Sergio', 'Verónica', 'Pablo', 'Andrea',
+            'Javier', 'Lucía', 'Raúl', 'Elena', 'Alejandro', 'Sofía', 'Manuel', 'Carolina'
+        ];
+
+        $apellidosBolivianos = [
+            'García', 'Rodríguez', 'Martínez', 'López', 'González', 'Pérez', 'Sánchez',
+            'Ramírez', 'Torres', 'Flores', 'Rivera', 'Gómez', 'Díaz', 'Cruz', 'Morales',
+            'Gutiérrez', 'Ortiz', 'Romero', 'Vargas', 'Castro', 'Jiménez', 'Ramos',
+            'Herrera', 'Medina', 'Aguilar', 'Mendoza', 'Rojas', 'Vega', 'Molina', 'Castillo'
+        ];
+
+        $dominiosEmail = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'icloud.com'];
+
+        // ✅ Obtener emails y usernames existentes
+        $emailsUsados = User::pluck('email')->toArray();
+        $usernamesUsados = User::pluck('username')->toArray();
+
+        $usersBatch = [];
+
+        for ($i = 1; $i <= $cantidadUsuarios; $i++) {
+            try {
+                // 60% bolivianos, 40% extranjeros
+                $esBoliviano = rand(1, 100) <= 60;
+                
+                if ($esBoliviano) {
+                    $nombre = $nombresBolivianos[array_rand($nombresBolivianos)];
+                    $apellido = $apellidosBolivianos[array_rand($apellidosBolivianos)];
+                    $tipoNacionalidad = 'nacional';
+                    $telefono = '7' . $faker->numerify('#######');
+                } else {
+                    $nombre = $faker->firstName();
+                    $apellido = $faker->lastName();
+                    $tipoNacionalidad = 'extranjero';
+                    $telefono = $faker->numerify('##########');
+                }
+
+                // Username único
+                $usernameBase = strtolower(str_replace(' ', '_', $nombre . '_' . $apellido));
+                do {
+                    $username = $usernameBase . '_' . rand(1000, 9999);
+                } while (in_array($username, $usernamesUsados));
+                $usernamesUsados[] = $username;
+
+                // Email único
+                $emailBase = strtolower(str_replace(' ', '', $nombre . $apellido));
+                do {
+                    $email = $emailBase . rand(1, 9999) . '@' . $dominiosEmail[array_rand($dominiosEmail)];
+                } while (in_array($email, $emailsUsados));
+                $emailsUsados[] = $email;
+
+                // Edad realista
+                $rangoEdad = rand(1, 100);
+                if ($rangoEdad <= 40) {
+                    $edad = rand(25, 35); // 40% jóvenes adultos
+                } elseif ($rangoEdad <= 70) {
+                    $edad = rand(36, 50); // 30% adultos
+                } elseif ($rangoEdad <= 90) {
+                    $edad = rand(20, 24); // 20% jóvenes
+                } else {
+                    $edad = rand(51, 70); // 10% seniors
+                }
+
+                $sexo = $faker->randomElement(['M', 'F']);
+                $emailVerificado = rand(1, 10) <= 8 ? Carbon::now() : null;
+
+                $now = Carbon::now();
+                
+                $usersBatch[] = [
+                    'name' => "{$nombre} {$apellido}",
+                    'username' => $username,
+                    'edad' => $edad,
+                    'sexo' => $sexo,
+                    'telefono' => $telefono,
+                    'profile_icon' => null,
+                    'tipo_nacionalidad' => $tipoNacionalidad,
+                    'email' => $email,
+                    'email_verified_at' => $emailVerificado,
+                    'password' => Hash::make('123456789'),
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+
+                // Insertar en lotes
+                if (count($usersBatch) >= $batchSize) {
+                    $insertados = $this->insertarLote($usersBatch);
+                    $creados += $insertados;
+                    
+                    $porcentaje = round(($creados / $cantidadUsuarios) * 100, 1);
+                    $this->command->info("   ✅ Progreso: {$creados}/{$cantidadUsuarios} ({$porcentaje}%)");
+                    
+                    $usersBatch = [];
+                }
+
+            } catch (Exception $e) {
+                $errores++;
+            }
+        }
+
+        // Insertar último lote
+        if (!empty($usersBatch)) {
+            $insertados = $this->insertarLote($usersBatch);
+            $creados += $insertados;
+        }
+
+        // Estadísticas finales
         $this->command->newLine();
         $this->command->info('═══════════════════════════════════════════════════');
-        $this->command->info('📊 RESUMEN');
-        $this->command->info("   ✅ Creados:      {$creados}");
-        $this->command->info("   🔄 Ya existían:  {$yaExisten}");
-        $this->command->info("   ❌ Errores:      {$errores}");
-        $this->command->info("   📦 Total:        {$total}");
+        $this->command->info('📊 RESUMEN MASIVO');
+        $this->command->info("   ✅ Usuarios-Clientes creados: {$creados}");
+        $this->command->info("   ❌ Errores:                   {$errores}");
         $this->command->info('═══════════════════════════════════════════════════');
+        
+        $this->mostrarEstadisticas();
+    }
+
+    /**
+     * Insertar lote de usuarios + clientes (SIN asignar segmentos)
+     */
+    private function insertarLote($usersBatch): int
+    {
+        DB::beginTransaction();
+        try {
+            // 1️⃣ Insertar usuarios
+            DB::table('users')->insert($usersBatch);
+            
+            // 2️⃣ Obtener IDs de usuarios recién creados
+            $ultimosEmails = array_column($usersBatch, 'email');
+            $idsUsuarios = User::whereIn('email', $ultimosEmails)->pluck('id')->toArray();
+            
+            // 3️⃣ Crear clientes (solo ID, created_at, updated_at)
+            $clientesBatch = array_map(function($id) {
+                return [
+                    'id' => $id,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ];
+            }, $idsUsuarios);
+            
+            DB::table('clientes')->insert($clientesBatch);
+            
+            // ✅ NO asignamos segmentos aquí
+            // El sistema lo hará automáticamente cuando el cliente haga reservas
+            
+            DB::commit();
+            return count($usersBatch);
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            $this->command->error("   ❌ Error en lote: {$e->getMessage()}");
+            return 0;
+        }
+    }
+
+    /**
+     * Mostrar estadísticas finales
+     */
+    private function mostrarEstadisticas(): void
+    {
         $this->command->newLine();
-        $this->command->info('🎉 Seeder de Usuarios y Clientes completado!');
+        $this->command->info('📈 ESTADÍSTICAS FINALES:');
+        
+        $totalUsers = User::count();
+        $totalClientes = Cliente::count();
+        $soloUsuarios = $totalUsers - $totalClientes;
+        $verificados = User::whereNotNull('email_verified_at')->count();
+        $nacionales = User::where('tipo_nacionalidad', 'nacional')->count();
+        $extranjeros = User::where('tipo_nacionalidad', 'extranjero')->count();
+        
+        $this->command->info("   👥 Total usuarios:         {$totalUsers}");
+        $this->command->info("   🎫 Total clientes:         {$totalClientes}");
+        $this->command->info("   👨‍💼 Solo usuarios (staff):  {$soloUsuarios}");
+        $this->command->info("   ✉️  Verificados:           {$verificados} (" . round(($verificados/$totalUsers)*100, 1) . "%)");
+        $this->command->info("   🇧🇴 Nacionales:            {$nacionales} (" . round(($nacionales/$totalUsers)*100, 1) . "%)");
+        $this->command->info("   🌍 Extranjeros:           {$extranjeros} (" . round(($extranjeros/$totalUsers)*100, 1) . "%)");
+        
+        // Verificar segmentos disponibles (sin asignar)
+        $segmentosDisponibles = Segmento::where('activo', true)->count();
+        $clientesConSegmento = DB::table('cliente_segmento')->distinct('cliente_id')->count();
+        $clientesSinSegmento = $totalClientes - $clientesConSegmento;
+        
+        $this->command->newLine();
+        $this->command->info('🎯 SEGMENTACIÓN:');
+        $this->command->info("   📊 Segmentos disponibles:     {$segmentosDisponibles}");
+        $this->command->info("   ✅ Clientes ya segmentados:   {$clientesConSegmento}");
+        $this->command->info("   ⏳ Pendientes de segmentar:   {$clientesSinSegmento}");
+        $this->command->warn("   ℹ️  Los segmentos se asignarán automáticamente por el sistema");
     }
 }

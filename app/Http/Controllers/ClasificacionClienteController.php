@@ -1,14 +1,14 @@
 <?php
-// filepath: d:\DESARRROLLO\TALLER_DE_GRADO\Laravel-Hotel\app\Http\Controllers\ClasificacionClienteController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Reserva;
 use App\Models\Segmento;
-use App\Models\Checkin;        // ← AGREGAR ESTA LÍNEA
+use App\Models\Checkin;       
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
@@ -62,7 +62,7 @@ class ClasificacionClienteController extends Controller
                 );
 
             if (!$response->successful()) {
-                \Log::error('Error microservicio:', [
+                Log::error('Error microservicio:', [
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
@@ -111,7 +111,7 @@ class ClasificacionClienteController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error en clasificarCliente:', ['error' => $e->getMessage()]);
+            Log::error('Error en clasificarCliente:', ['error' => $e->getMessage()]);
             
             return response()->json([
                 'success' => false,
@@ -125,6 +125,10 @@ class ClasificacionClienteController extends Controller
      */
     public function clasificarClientesEnLote(Request $request)
     {
+        // ✅ Aumentar tiempo máximo de ejecución
+        set_time_limit(300); // 5 minutos
+        ini_set('max_execution_time', '300');
+        
         try {
             // ✅ PASO 1: VALIDAR DATOS SUFICIENTES
             $validacion = $this->validarDatosSuficientes();
@@ -175,7 +179,7 @@ class ClasificacionClienteController extends Controller
                         $datos = $this->formatearReservaParaMicroservicio($reservaRepresentativa, $cliente);
                         $reservasParaClasificar[] = $datos;
                     } catch (\Exception $e) {
-                        \Log::warning("⚠️ No se pudo formatear cliente {$cliente->id}: {$e->getMessage()}");
+                        Log::warning("⚠️ No se pudo formatear cliente {$cliente->id}: {$e->getMessage()}");
                         continue;
                     }
                 }
@@ -189,7 +193,7 @@ class ClasificacionClienteController extends Controller
                 ], 400);
             }
 
-            \Log::info('📤 Enviando datos al microservicio:', [
+            Log::info('📤 Enviando datos al microservicio:', [
                 'total_clientes' => count($reservasParaClasificar),
                 'primer_registro' => $reservasParaClasificar[0] ?? null
             ]);
@@ -202,7 +206,7 @@ class ClasificacionClienteController extends Controller
                     $reservasParaClasificar
                 );
 
-            \Log::info('📥 Respuesta del microservicio:', [
+            Log::info('📥 Respuesta del microservicio:', [
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
@@ -311,7 +315,7 @@ class ClasificacionClienteController extends Controller
             // ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error:', ['error' => $e->getMessage()]);
+            Log::error('Error:', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
@@ -408,7 +412,7 @@ class ClasificacionClienteController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Error en validarDatosSuficientes:', [
+            Log::error('Error en validarDatosSuficientes:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

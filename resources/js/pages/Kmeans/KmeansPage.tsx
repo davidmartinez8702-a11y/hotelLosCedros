@@ -217,10 +217,10 @@ export default function KmeansVisualizacion() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,  // ✅ Token validado
-                    'X-Requested-With': 'XMLHttpRequest'  // ✅ IMPORTANTE para Laravel
+                    'X-CSRF-TOKEN': csrfToken,  
+                    'X-Requested-With': 'XMLHttpRequest'  
                 },
-                credentials: 'same-origin',  // ✅ Incluir cookies
+                credentials: 'same-origin',  
                 body: JSON.stringify({
                     dias_inactividad: diasInactividad
                 })

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class Promo extends Model
 {
@@ -18,7 +20,7 @@ class Promo extends Model
         'descuento_monto',
         'precio_total_paquete',
         'precio_normal',
-        'segmento_id', // ⚠️ DEPRECADO - Usar relación muchos a muchos en su lugar
+        'segmento_id', 
         'aplica_a',
         'estado',
         'fecha_inicio',
@@ -106,7 +108,7 @@ class Promo extends Model
     public function tieneReservas(): bool
     {
         try {
-            if (\Schema::hasTable('promo_reservas')) {
+            if (Schema::hasTable('promo_reservas')) {
                 return $this->promoReservas()->exists();
             }
             return false;
@@ -242,7 +244,7 @@ class Promo extends Model
         // Si aplica a todos los segmentos
         if ($this->aplicaTodosSegmentos()) {
             // Solo verificar límite de usos por cliente
-            if (\Schema::hasTable('promo_reservas')) {
+            if (Schema::hasTable('promo_reservas')) {
                 $usosCliente = $this->promoReservas()
                     ->where('cliente_id', $clienteId)
                     ->count();
@@ -261,9 +263,9 @@ class Promo extends Model
         $segmentoValido = $this->segmentos()
             ->where('segmentos.id', $cliente->segmento_id)
             ->where('segmento_promo.estado', 'activa')
-            ->whereBetween(\DB::raw('CURRENT_DATE'), [
-                \DB::raw('COALESCE(segmento_promo.fecha_inicio, promos.fecha_inicio)'),
-                \DB::raw('COALESCE(segmento_promo.fecha_fin, promos.fecha_fin)')
+            ->whereBetween(DB::raw('CURRENT_DATE'), [
+                DB::raw('COALESCE(segmento_promo.fecha_inicio, promos.fecha_inicio)'),
+                DB::raw('COALESCE(segmento_promo.fecha_fin, promos.fecha_fin)')
             ])
             ->exists();
 
@@ -272,7 +274,7 @@ class Promo extends Model
         }
 
         // Verificar límite de usos por cliente
-        if (\Schema::hasTable('promo_reservas')) {
+        if (Schema::hasTable('promo_reservas')) {
             $usosCliente = $this->promoReservas()
                 ->where('cliente_id', $clienteId)
                 ->count();

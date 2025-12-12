@@ -162,10 +162,12 @@ export default function Index({ promos, filtros }: Props) {
                     {filtrosAbiertos && (
                         <div className="grid grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="filtro-estado" className="block text-sm font-medium text-gray-700 mb-2">
                                     Estado
                                 </label>
                                 <select
+                                    id="filtro-estado"
+                                    aria-label="Filtrar por estado de promoción"
                                     value={filtrosPorDefecto.estado}
                                     onChange={(e) => aplicarFiltros({ estado: e.target.value })}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -178,10 +180,12 @@ export default function Index({ promos, filtros }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="filtro-tipo" className="block text-sm font-medium text-gray-700 mb-2">
                                     Tipo
                                 </label>
                                 <select
+                                    id="filtro-tipo"
+                                    aria-label="Filtrar por tipo de promoción"
                                     value={filtrosPorDefecto.tipo_promo}
                                     onChange={(e) => aplicarFiltros({ tipo_promo: e.target.value })}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -305,6 +309,7 @@ export default function Index({ promos, filtros }: Props) {
                                     <Link
                                         href={route('promos.show', promo.id)}
                                         className="flex-1 inline-flex justify-center items-center px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-200"
+                                        aria-label={`Ver detalles de ${promo.nombre}`}
                                     >
                                         <Eye className="h-4 w-4 mr-1" />
                                         Ver
@@ -313,6 +318,7 @@ export default function Index({ promos, filtros }: Props) {
                                     <Link
                                         href={route('promos.edit', promo.id)}
                                         className="flex-1 inline-flex justify-center items-center px-3 py-2 bg-indigo-100 border border-indigo-300 rounded-md text-xs font-medium text-indigo-700 hover:bg-indigo-200"
+                                        aria-label={`Editar ${promo.nombre}`}
                                     >
                                         <Pencil className="h-4 w-4 mr-1" />
                                         Editar
@@ -321,6 +327,8 @@ export default function Index({ promos, filtros }: Props) {
                                     <button
                                         onClick={() => toggleEstado(promo.id)}
                                         className="inline-flex justify-center items-center px-3 py-2 bg-yellow-100 border border-yellow-300 rounded-md text-xs font-medium text-yellow-700 hover:bg-yellow-200"
+                                        aria-label={promo.estado === 'activa' ? `Pausar ${promo.nombre}` : `Activar ${promo.nombre}`}
+                                        title={promo.estado === 'activa' ? 'Pausar promoción' : 'Activar promoción'}
                                     >
                                         {promo.estado === 'activa' ? (
                                             <Pause className="h-4 w-4" />
@@ -332,6 +340,8 @@ export default function Index({ promos, filtros }: Props) {
                                     <button
                                         onClick={() => eliminarPromo(promo.id, promo.nombre)}
                                         className="inline-flex justify-center items-center px-3 py-2 bg-red-100 border border-red-300 rounded-md text-xs font-medium text-red-700 hover:bg-red-200"
+                                        aria-label={`Eliminar ${promo.nombre}`}
+                                        title="Eliminar promoción"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>

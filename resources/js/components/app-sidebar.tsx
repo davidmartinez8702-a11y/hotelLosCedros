@@ -23,6 +23,7 @@ import servicios from '@/routes/servicios';
 import categorias from '@/routes/categorias';
 import platillos from '@/routes/platillos';
 import tipoHabitacion from '@/routes/tipo-habitacion';
+import Habitacion from '@/routes/habitaciones';
 
 
 const mainNavItems: NavItem[] = [
@@ -57,6 +58,12 @@ const mainNavItems: NavItem[] = [
         title:'Tipo De Habitacion',
         //href: route('tipo-habitacion.index'),
         href:tipoHabitacion.index(),
+        icon:HotelIcon,
+    },
+        {
+        title:'Habitaciones',
+        //href: route('tipo-habitacion.index'),
+        href:Habitacion.index(),
         icon:HotelIcon,
     },
     // {

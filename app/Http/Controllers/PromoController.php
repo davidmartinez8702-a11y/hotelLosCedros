@@ -10,6 +10,7 @@ use App\Models\Servicio;
 use App\Models\Platillo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -193,7 +194,7 @@ class PromoController extends Controller
 
         // ✅ Solo intentar obtener stats si la tabla promo_reservas existe
         try {
-            if (method_exists($promo, 'promoReservas') && \Schema::hasTable('promo_reservas')) {
+            if (method_exists($promo, 'promoReservas') && Schema::hasTable('promo_reservas')) {
                 $stats = [
                     'total_usos' => $promo->promoReservas()->count(),
                     'total_ahorro' => $promo->promoReservas()->sum('monto_descuento') ?? 0,
@@ -377,7 +378,7 @@ class PromoController extends Controller
     {
         // ✅ Solo verificar si la tabla existe
         try {
-            if (\Schema::hasTable('promo_reservas') && $promo->promoReservas()->exists()) {
+            if (Schema::hasTable('promo_reservas') && $promo->promoReservas()->exists()) {
                 return back()->withErrors([
                     'error' => 'No se puede eliminar: hay reservas usando esta promoción'
                 ]);

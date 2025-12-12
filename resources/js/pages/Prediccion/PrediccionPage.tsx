@@ -141,10 +141,12 @@ export default function PrediccionPage() {
                         {/* Controles */}
                         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="tipo-prediccion" className="block text-sm font-medium text-gray-700 mb-2">
                                     Tipo de Predicción
                                 </label>
                                 <select
+                                    id="tipo-prediccion"
+                                    aria-label="Seleccionar tipo de predicción"
                                     value={tipoPred}
                                     onChange={(e) => setTipoPred(e.target.value as any)}
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
@@ -156,15 +158,18 @@ export default function PrediccionPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="dias-predecir" className="block text-sm font-medium text-gray-700 mb-2">
                                     Días a Predecir
                                 </label>
                                 <input
+                                    id="dias-predecir"
                                     type="number"
                                     min="1"
                                     max="30"
                                     value={dias}
                                     onChange={(e) => setDias(parseInt(e.target.value))}
+                                    aria-label="Cantidad de días a predecir"
+                                    placeholder="Ej: 10"
                                     className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 />
                             </div>
@@ -174,6 +179,7 @@ export default function PrediccionPage() {
                                     onClick={handlePredict}
                                     disabled={loading}
                                     className="flex-1"
+                                    aria-label="Generar predicción"
                                 >
                                     {loading ? 'Procesando...' : 'Generar Predicción'}
                                 </Button>
@@ -183,6 +189,7 @@ export default function PrediccionPage() {
                                         onClick={handleGenerarReporte}
                                         variant="outline"
                                         title="Generar Reporte PDF"
+                                        aria-label="Descargar reporte PDF de predicciones"
                                     >
                                         <FileDown className="h-4 w-4" />
                                     </Button>

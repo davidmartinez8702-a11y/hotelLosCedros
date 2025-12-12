@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RolesSeeder::class,
+            SegmentoSeeder::class,
             StaffSeeder::class,
             UserClienteSeeder::class,
             CategoriaSeeder::class,
@@ -27,12 +28,12 @@ class DatabaseSeeder extends Seeder
             ComentarioSeeder::class,
             CaracteristicaSeeder::class,    
             HabitacionCaracteristicaSeeder::class,
-            ClienteSeeder::class,  
+            // ClienteSeeder::class,  
             TipoPagoSeeder::class,
-            ReservaSeeder::class,
-            CheckinSeeder::class,
-            CuentaSeeder::class,
-            SegmentoSeeder::class,
+            // ReservaSeeder::class,
+            // CheckinSeeder::class,
+            // CuentaSeeder::class,
+            ReservaCompletaSeeder::class,
             PromoSeeder::class,
         ]);
     }

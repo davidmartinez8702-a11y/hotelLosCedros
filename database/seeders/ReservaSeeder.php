@@ -43,7 +43,7 @@ class ReservaSeeder extends Seeder
         $reservasCreadas = 0;
 
         foreach ($clientes as $cliente) {
-            $reservasPorCliente = rand(10, 80); // Crear entre 10 y 30 reservas por cliente
+            $reservasPorCliente = rand(10, 20); // Crear entre 10 y 20 reservas por cliente
 
             for ($i = 0; $i < $reservasPorCliente; $i++) {
                 DB::beginTransaction(); // Iniciar transacción

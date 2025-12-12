@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HabitacionEvento;
 use App\Models\TipoHabitacion;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class HabitacionEventoController extends Controller
 {
