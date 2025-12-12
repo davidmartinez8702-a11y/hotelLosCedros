@@ -17,6 +17,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\HabitacionEventoController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\ReservaClienteController;
 use App\Http\Controllers\RecepcionistaController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -366,3 +367,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('habitaciones-dashboard', [HabitacionEventoController::class, 'dashboard'])
         ->name('habitaciones.dashboard');
 });
+
+// ============================================
+// RUTAS DE RESERVAS PARA CLIENTES
+// ============================================
+
+// Páginas (Inertia)
+Route::get('/reservas/cliente', [ReservaClienteController::class, 'index'])->name('reservas.cliente.index');
+Route::get('/reservas/cliente/crear', [ReservaClienteController::class, 'create'])->name('reservas.cliente.create');
+Route::get('/reservas/cliente/confirmacion', [ReservaClienteController::class, 'confirmacion'])->name('reservas.cliente.confirmacion');
+
+// API (AJAX)
+Route::post('/api/reservas/cliente/disponibilidad', [ReservaClienteController::class, 'buscarDisponibilidad']);
+Route::post('/api/reservas/cliente/calcular-precio', [ReservaClienteController::class, 'calcularPrecio']);
+Route::get('/api/reservas/cliente/promociones', [ReservaClienteController::class, 'obtenerPromociones']);
+Route::post('/api/reservas/cliente', [ReservaClienteController::class, 'store']); // ✅ ESTA ES LA IMPORTANTE
+Route::post('/api/reservas/{reserva}/reenviar-email', [ReservaClienteController::class, 'reenviarEmail']);
