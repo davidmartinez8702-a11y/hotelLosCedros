@@ -71,7 +71,7 @@ class ReservaSeeder extends Seeder
                             'cantidad' => $cantidad,
                         ];
                     }
-
+                    $montoTotal = $montoTotal * $diasEstadia;
                     // Generar pago inicial random
                     $pagoInicialRandom = rand(0, $montoTotal);
 

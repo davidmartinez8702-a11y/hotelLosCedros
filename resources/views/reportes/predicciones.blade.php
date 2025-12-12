@@ -260,10 +260,10 @@
         </div>
         <div class="info-row">
             <span class="info-label">Variación:</span>
-            <span class="info-value" style="color: {{ $diferencia >= 0 ? '#38a169' : '#e53e3e' }};">
+            <!-- <span class="info-value" style="color: {{ $diferencia >= 0 ? '#38a169' : '#e53e3e' }};">
                 {{ $diferencia >= 0 ? '+' : '' }}{{ number_format($diferencia, 2) }} 
                 ({{ number_format($porcentaje_cambio, 2) }}%)
-            </span>
+            </span> -->
         </div>
     </div>
 

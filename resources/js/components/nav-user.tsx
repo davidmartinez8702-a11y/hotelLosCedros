@@ -18,6 +18,7 @@ import { ChevronsUpDown } from 'lucide-react';
 
 export function NavUser() {
     const { auth } = usePage<SharedData>().props;
+    // console.log("auth.user.rol ", auth.user.rol);
     const { state } = useSidebar();
     const isMobile = useIsMobile();
 

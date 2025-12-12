@@ -42,6 +42,20 @@ class StaffSeeder extends Seeder
                 'password'           => Hash::make('123456789'),
                 'tipo_nacionalidad' => 'nacional',
             ],
+            [
+                'name'               => 'Fernando Admin',
+                'username'           => 'fernando_admin',
+                'email'              => 'fernando.admin@gmail.com',
+                'password'           => Hash::make('123456789'),
+                'tipo_nacionalidad' => 'nacional',
+            ],
+            [
+                'name'               => 'Erick Admin',
+                'username'           => 'erick_admin',
+                'email'              => 'erick.admin@gmail.com',
+                'password'           => Hash::make('123456789'),
+                'tipo_nacionalidad' => 'nacional',
+            ],
         ];
 
         foreach ($admins as $data) {
@@ -80,6 +94,14 @@ class StaffSeeder extends Seeder
                 'password'           => Hash::make('123456789'),
                 'tipo_nacionalidad' => 'nacional',
             ],
+             [
+                'name'               => 'Erick',
+                'username'           => 'erick',
+                'email'              => 'erick@gmail.com',
+                'password'           => Hash::make('123456789'),
+                'tipo_nacionalidad' => 'nacional',
+            ],
+
         ];
 
         foreach ($clientes as $data) {
