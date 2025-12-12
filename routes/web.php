@@ -17,6 +17,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\HabitacionEventoController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\RecepcionistaController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -172,6 +173,26 @@ Route::prefix('clientes')->name('clientes.')->middleware(['auth'])->group(functi
     // Rutas de Reservas
     Route::get('/', [ReservaController::class, 'misReservas'])->name('mis-reservas.index');
     Route::get('/{reserva}', [ReservaController::class, 'show'])->name('mis-reservas.show');
+    // Route::get('/reservas/create', [ReservaController::class, 'create'])->name('reservas.create');
+    // Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])->name('reservas.show');
+    // Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
+
+    // // Rutas de Check-ins
+    // Route::get('/checkins', [CheckinController::class, 'index'])->name('checkins.index');
+    // Route::get('/{reserva}/checkins/create', [CheckinController::class, 'createCheckinMedianteReserva'])->name('checkins.create');
+    // Route::get('/checkins/{checkin}', [CheckinController::class, 'show'])->name('checkins.show');
+    // Route::get('/checkins/{checkin}/edit', [CheckinController::class, 'edit'])->name('checkins.edit');
+    // // Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
+    // Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
+    // Route::post('/checkins/{reserva}/store', [CheckinController::class, 'store'])->name('checkins.store');
+    // Route::delete('/checkins/{checkin}', [CheckinController::class, 'destroy'])->name('checkins.destroy');
+
+});
+
+Route::prefix('recepcionista')->name('recepcionista.')->middleware(['auth'])->group(function () {
+    // Rutas de Reservas
+    Route::get('/dashboard', [RecepcionistaController::class, 'dashboardRecepcionista'])->name('dashboard');
+    
     // Route::get('/reservas/create', [ReservaController::class, 'create'])->name('reservas.create');
     // Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])->name('reservas.show');
     // Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');

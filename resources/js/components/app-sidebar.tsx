@@ -29,11 +29,17 @@ interface CustomNavItem extends NavItem {
     roles: string[];
 }
 const mainNavItems: CustomNavItem[] = [
+    // {
+    //     title: 'Dashboard',
+    //     href: dashboard(),
+    //     icon: LayoutGrid,
+    //     roles: ['administrador', 'recepcionista', 'cliente'],
+    // },
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: route('recepcionista.dashboard'),
         icon: LayoutGrid,
-        roles: ['administrador', 'recepcionista', 'cliente'],
+        roles: ['recepcionista'],
     },
     {
         title: 'Mis Reservas',

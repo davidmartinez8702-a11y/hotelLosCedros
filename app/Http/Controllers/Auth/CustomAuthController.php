@@ -33,7 +33,7 @@ class CustomAuthController extends Controller
             if ($user->hasRole('administrador')) {
                 return redirect()->route('dashboard.administrador');
             } elseif ($user->hasRole('recepcionista')) {
-                return redirect()->route('dashboard.recepcion');
+                return redirect()->route('recepcionista.dashboard');
             } elseif ($user->hasRole('cliente')) {
                 return redirect()->route('dashboard.cliente');
             }
