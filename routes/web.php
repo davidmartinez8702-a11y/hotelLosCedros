@@ -173,7 +173,7 @@ Route::prefix('cuentas')->name('cuentas.')->group(function () {
     Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
     
     // Route::get('/{cuenta}', [CuentaController::class, 'show'])->name('show');
-    
+    Route::get('/{cuenta}/reportes/pdf', [CuentaController::class, 'generarReporte'])->name('reportes.pdf');
     // Rutas adicionales
     Route::post('/{cuenta}/transacciones', [CuentaController::class, 'agregarTransacciones'])->name('transacciones.agregar');
     Route::delete('/{cuenta}/transacciones/{transaccion}', [CuentaController::class, 'eliminarTransaccion'])->name('transacciones.eliminar');

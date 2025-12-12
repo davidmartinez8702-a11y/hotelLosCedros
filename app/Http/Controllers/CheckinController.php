@@ -544,26 +544,26 @@ class CheckinController extends Controller
             // Liberar la habitación anterior (si no tiene fecha de salida)
             if (!$checkin->fecha_salida) {
                 HabitacionEvento::where('id', $checkin->habitacion_evento_id)
-                    ->update(['estado' => 'activo']);
+                    ->update(['estado' => 'disponible']);
             }
             
             // Ocupar la nueva habitación (si no tiene fecha de salida)
             if (!$validated['fecha_salida']) {
                 HabitacionEvento::where('id', $validated['habitacion_evento_id'])
-                    ->update(['estado' => 'ocupado']);
+                    ->update(['estado' => 'ocupada']);
             }
         }
 
         // Si se asigna fecha de salida, liberar habitación
         if ($validated['fecha_salida'] && !$checkin->fecha_salida) {
             HabitacionEvento::where('id', $validated['habitacion_evento_id'])
-                ->update(['estado' => 'activo']);
+                ->update(['estado' => 'disponible']);
         }
 
         // Si se quita la fecha de salida, ocupar habitación
         if (!$validated['fecha_salida'] && $checkin->fecha_salida) {
             HabitacionEvento::where('id', $validated['habitacion_evento_id'])
-                ->update(['estado' => 'ocupado']);
+                ->update(['estado' => 'ocupada']);
         }
 
         $checkin->update($validated);

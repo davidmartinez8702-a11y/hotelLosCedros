@@ -281,20 +281,20 @@ export default function CheckinIndex({ checkins, clientes, filters = {} }: Props
                 </div>
             ),
         },
-        {
-            key: 'estado',
-            label: 'Estado',
-            render: (checkin) => {
-                const activo = !checkin.fecha_salida;
-                return (
-                    <Badge variant={activo ? "default" : "secondary"} className={cn(
-                        activo && "bg-green-500 hover:bg-green-600"
-                    )}>
-                        {activo ? 'Activo' : 'Finalizado'}
-                    </Badge>
-                );
-            },
-        },
+        // {
+        //     key: 'estado',
+        //     label: 'Estado',
+        //     render: (checkin) => {
+        //         const activo = !checkin.fecha_salida;
+        //         return (
+        //             <Badge variant={activo ? "default" : "secondary"} className={cn(
+        //                 activo && "bg-green-500 hover:bg-green-600"
+        //             )}>
+        //                 {activo ? 'Activo' : 'Finalizado'}
+        //             </Badge>
+        //         );
+        //     },
+        // },
         {
             key: 'actions',
             label: 'Acciones',

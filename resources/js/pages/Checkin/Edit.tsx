@@ -141,7 +141,7 @@ export default function CheckinEdit({ checkin, recepcionistas, habitacionesEvent
             <Head title={`Editar Check-in #${checkin.id}`} />
 
             <div className="py-8 lg:py-12">
-                <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     {/* Header */}
                     <div className="flex items-center gap-4">
                         <Link href={route('recepcion.checkins.show', checkin.id)}>

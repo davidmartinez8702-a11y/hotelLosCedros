@@ -92,12 +92,12 @@ class CheckinSeeder extends Seeder
 
                     // Obtener habitaciones disponibles para el tipo de habitación reservado
                     $habitaciones = HabitacionEvento::where('tipo_habitacion_id', $hospedaje->tipo_habitacion_id)
-                        ->where('estado', 'activo')
+                        ->where('estado', 'disponible')
                         ->take($hospedaje->cantidad)
                         ->get();
 
                     if ($habitaciones->isEmpty()) {
-                        $this->command->error("❌ No hay habitaciones activas para el tipo de habitación reservado en la reserva {$reserva->id}.");
+                        $this->command->error("❌ No hay habitaciones disponibles para el tipo de habitación reservado en la reserva {$reserva->id}.");
                         continue; // Pasar al siguiente hospedaje
                     }
 
