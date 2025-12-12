@@ -17,6 +17,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\HabitacionEventoController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\ReservaClienteController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -163,33 +164,8 @@ Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(func
     Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
     Route::post('/checkins/{reserva}/store', [CheckinController::class, 'store'])->name('checkins.store');
     Route::delete('/checkins/{checkin}', [CheckinController::class, 'destroy'])->name('checkins.destroy');
-    Route::get('/{reserva}/reporte-distribucion', [ReservaController::class, 'generarReporteDistribucion'])->name('reporte.distribucion');
-    Route::get('/{reserva}/reporte-asignacion', [ReservaController::class, 'generarReporteAsignacion'])->name('reporte.asignacion');
 
 });
-
-Route::prefix('clientes')->name('clientes.')->middleware(['auth'])->group(function () {
-    // Rutas de Reservas
-    Route::get('/', [ReservaController::class, 'misReservas'])->name('mis-reservas.index');
-    Route::get('/{reserva}', [ReservaController::class, 'show'])->name('mis-reservas.show');
-    // Route::get('/reservas/create', [ReservaController::class, 'create'])->name('reservas.create');
-    // Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])->name('reservas.show');
-    // Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
-
-    // // Rutas de Check-ins
-    // Route::get('/checkins', [CheckinController::class, 'index'])->name('checkins.index');
-    // Route::get('/{reserva}/checkins/create', [CheckinController::class, 'createCheckinMedianteReserva'])->name('checkins.create');
-    // Route::get('/checkins/{checkin}', [CheckinController::class, 'show'])->name('checkins.show');
-    // Route::get('/checkins/{checkin}/edit', [CheckinController::class, 'edit'])->name('checkins.edit');
-    // // Route::post('/checkins', [CheckinController::class, 'store'])->name('checkins.store');
-    // Route::put('/checkins/{checkin}', [CheckinController::class, 'update'])->name('checkins.update');
-    // Route::post('/checkins/{reserva}/store', [CheckinController::class, 'store'])->name('checkins.store');
-    // Route::delete('/checkins/{checkin}', [CheckinController::class, 'destroy'])->name('checkins.destroy');
-
-});
-
-
- 
 Route::prefix('cuentas')->name('cuentas.')->group(function () {
     Route::get('/', [CuentaController::class, 'index'])->name('index');
     Route::get('/{checkin}/create', [CuentaController::class, 'create'])->name('create');
@@ -345,3 +321,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('habitaciones-dashboard', [HabitacionEventoController::class, 'dashboard'])
         ->name('habitaciones.dashboard');
 });
+
+// ============================================
+// RUTAS DE RESERVAS PARA CLIENTES
+// ============================================
+
+// Páginas (Inertia)
+Route::get('/reservas/cliente', [ReservaClienteController::class, 'index'])->name('reservas.cliente.index');
+Route::get('/reservas/cliente/crear', [ReservaClienteController::class, 'create'])->name('reservas.cliente.create');
+Route::get('/reservas/cliente/confirmacion', [ReservaClienteController::class, 'confirmacion'])->name('reservas.cliente.confirmacion');
+
+// API (AJAX)
+Route::post('/api/reservas/cliente/disponibilidad', [ReservaClienteController::class, 'buscarDisponibilidad']);
+Route::post('/api/reservas/cliente/calcular-precio', [ReservaClienteController::class, 'calcularPrecio']);
+Route::get('/api/reservas/cliente/promociones', [ReservaClienteController::class, 'obtenerPromociones']);
+Route::post('/api/reservas/cliente', [ReservaClienteController::class, 'store']); // ✅ ESTA ES LA IMPORTANTE
+Route::post('/api/reservas/{reserva}/reenviar-email', [ReservaClienteController::class, 'reenviarEmail']);

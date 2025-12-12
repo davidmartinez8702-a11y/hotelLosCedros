@@ -6,6 +6,8 @@ use App\Models\HabitacionEvento;
 use App\Models\TipoHabitacion;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Schema;  // ✅ AGREGAR ESTE IMPORT
+use Carbon\Carbon;  // ✅ AGREGAR TAMBIÉN CARBON
 
 class HabitacionEventoController extends Controller
 {
@@ -118,21 +120,78 @@ class HabitacionEventoController extends Controller
      */
     public function show(HabitacionEvento $habitacione)
     {
-        // ✅ Cargar relaciones sin filtro de estado
+        $hoy = Carbon::now();
+
+        // Cargar checkins normales
         $habitacione->load([
             'tipoHabitacion',
-            'checkinsActivos.cliente', // ✅ Ya filtra por fechas en el modelo
             'checkins' => function($query) {
                 $query->with('cliente')
-                      ->latest('fecha_entrada')
-                      ->limit(10);
-            }
+                      ->orderBy('created_at', 'desc')
+                      ->take(10);
+            },
         ]);
 
+        // ✅ Obtener checkins activos directamente con query
+        $checkinsActivos = $habitacione->checkins()
+            ->with('cliente')
+            ->whereDate('fecha_entrada', '<=', $hoy)
+            ->whereDate('fecha_salida', '>=', $hoy)
+            ->get();
+
+        $ocupantes_actuales = $checkinsActivos->count();
+        $capacidad_total = $habitacione->tipoHabitacion->capacidad_total ?? 0;
+
         return inertia('Habitacion/HabitacionShow', [
-            'habitacion' => $habitacione,
-            'ocupantes_actuales' => $habitacione->ocupantes_actuales,
-            'capacidad_total' => $habitacione->capacidad_total,
+            'habitacion' => [
+                'id' => $habitacione->id,
+                'codigo' => $habitacione->codigo,
+                'nombre' => $habitacione->nombre,
+                'estado' => $habitacione->estado,
+                'piso' => $habitacione->piso,
+                'ala_seccion' => $habitacione->ala_seccion,
+                'vista' => $habitacione->vista,
+                'notas_internas' => $habitacione->notas_internas,
+                'requiere_mantenimiento' => (bool) $habitacione->requiere_mantenimiento,
+                'ultima_limpieza' => $habitacione->ultima_limpieza,
+                'tipo_habitacion' => [
+                    'id' => $habitacione->tipoHabitacion->id,
+                    'nombre' => $habitacione->tipoHabitacion->nombre,
+                    'tipo' => $habitacione->tipoHabitacion->tipo,
+                    'capacidad_total' => $habitacione->tipoHabitacion->capacidad_total,
+                    'precio' => $habitacione->tipoHabitacion->precio,
+                ],
+                'checkins_activos' => $checkinsActivos->map(function($checkin) {
+                    return [
+                        'id' => $checkin->id,
+                        'fecha_entrada' => $checkin->fecha_entrada,
+                        'fecha_salida' => $checkin->fecha_salida,
+                        'created_at' => $checkin->created_at->format('Y-m-d H:i:s'),
+                        'cliente' => [
+                            'id' => $checkin->cliente->id,
+                            'nombre' => $checkin->cliente->nombre,
+                            'apellido' => $checkin->cliente->apellido,
+                            'email' => $checkin->cliente->email,
+                        ],
+                    ];
+                }),
+                'checkins' => $habitacione->checkins->map(function($checkin) {
+                    return [
+                        'id' => $checkin->id,
+                        'fecha_entrada' => $checkin->fecha_entrada,
+                        'fecha_salida' => $checkin->fecha_salida,
+                        'created_at' => $checkin->created_at->format('Y-m-d H:i:s'),
+                        'cliente' => [
+                            'id' => $checkin->cliente->id,
+                            'nombre' => $checkin->cliente->nombre,
+                            'apellido' => $checkin->cliente->apellido,
+                            'email' => $checkin->cliente->email,
+                        ],
+                    ];
+                }),
+            ],
+            'ocupantes_actuales' => $ocupantes_actuales,
+            'capacidad_total' => $capacidad_total,
         ]);
     }
 
