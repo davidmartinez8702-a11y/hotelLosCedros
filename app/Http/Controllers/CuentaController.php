@@ -450,15 +450,112 @@ class CuentaController extends Controller
     //     return $pdf->download('REPORTE_CUE_' . $cuenta->id . '.pdf');
     // }
 
+    // public function generarReporte(Cuenta $cuenta)
+    // {
+    //     // 1. Cargar relaciones esenciales para el reporte
+    //     $cuenta->load([
+    //         'checkin.cliente.usuario',
+    //         'checkin.habitacionEvento.tipoHabitacion',
+    //         'transaccions' => function($query) {
+    //              // Cargar solo las transacciones y sus ítems
+    //              $query->with(['servicio', 'platillo']);
+    //         }
+    //     ]);
+        
+    //     $checkin = $cuenta->checkin;
+    //     $precioNoche = $checkin->habitacionEvento->tipoHabitacion->precio;
+        
+    //     // Determinar fechas
+    //     $fechaEntrada = Carbon::parse($checkin->fecha_entrada);
+    //     $fechaSalida = $checkin->fecha_salida ? Carbon::parse($checkin->fecha_salida) : Carbon::now();
+        
+    //     // Calcular noches/días de estancia
+    //     $noches = $fechaSalida->diffInDays($fechaEntrada);
+    //     $noches = max(1, $noches); // Asegura mínimo 1 noche cobrada
+    //     $costoAlojamiento = $precioNoche * $noches;
+        
+    //     // 2. Preparar Desglose de Items (Alojamiento + Transacciones)
+    //     $desgloseItems = collect();
+    //     $totalConsumosActivos = 0;
+
+    //     // A. Cargo Base de Alojamiento (El primer cargo)
+    //     $desgloseItems->push([
+    //         'descripcion' => 'Alojamiento (' . $checkin->habitacionEvento->tipoHabitacion->nombre . ')',
+    //         'tipo' => 'Estancia',
+    //         'precio_unitario' => $precioNoche,
+    //         'cantidad' => $noches,
+    //         'subtotal' => $costoAlojamiento,
+    //         'estado' => 'CONFIRMADO',
+    //     ]);
+    //     $totalConsumosActivos += $costoAlojamiento;
+
+
+    //     // B. Otros Consumos (Servicios/Platillos)
+    //     foreach ($cuenta->transaccions as $t) {
+    //         $item = $t->servicio ?? $t->platillo;
+            
+    //         $estadoStr = strtoupper($t->estado);
+    //         $esCancelado = ($estadoStr === 'CANCELADA');
+
+    //         $desgloseItems->push([
+    //             'descripcion' => $item->nombre ?? 'Cargo Desconocido',
+    //             'tipo' => $t->servicio_id ? 'Servicio' : 'Platillo',
+    //             'precio_unitario' => $item->precio ?? 0,
+    //             'cantidad' => $t->cantidad,
+    //             'subtotal' => $t->subtotal,
+    //             'estado' => $estadoStr,
+    //         ]);
+
+    //         // Sumar solo si no está cancelado (para el total calculado)
+    //         if (!$esCancelado) {
+    //             $totalConsumosActivos += $t->subtotal;
+    //         }
+    //     }
+        
+    //     // 3. Preparar los datos generales del reporte
+    //     $datosReporte = [
+    //         'titulo' => 'REPORTE DE CONSUMOS Y ESTADÍA',
+    //         'cuenta' => [
+    //             'id' => $cuenta->id,
+    //             'fecha_emision' => Carbon::now()->format('d/m/Y H:i:s'),
+    //             'monto_total_db' => $cuenta->monto_total, 
+    //             'monto_pagado' => $cuenta->monto_pagado,
+    //             'saldo' => $cuenta->saldo,
+    //             'total_calculado' => $totalConsumosActivos, // Total de cargos activos
+    //         ],
+    //         'cliente' => [
+    //             'nombre' => $checkin->cliente->usuario->name,
+    //             'email' => $checkin->cliente->usuario->email,
+    //             'telefono' => $checkin->cliente->usuario->telefono,
+    //         ],
+    //         'estadia' => [
+    //             'habitacion_codigo' => $checkin->habitacionEvento->codigo,
+    //             'habitacion_nombre' => $checkin->habitacionEvento->nombre,
+    //             'fecha_entrada' => $fechaEntrada->format('d/m/Y H:i'),
+    //             'fecha_salida' => $checkin->fecha_salida ? $fechaSalida->format('d/m/Y H:i') : 'EN CURSO',
+    //             'noches' => $noches,
+    //         ],
+    //         'desglose' => $desgloseItems, // Lista completa, incluyendo cancelados
+    //     ];
+
+    //     // 4. Generar y Devolver el PDF
+    //     $pdf = Pdf::loadView('reportes.reporte_consumo', [
+    //         'datosReporte' => $datosReporte
+    //     ]);
+    //     return $pdf->download('REPORTE_CONSUMO_' . $cuenta->id . '.pdf');
+    // }
+
+
     public function generarReporte(Cuenta $cuenta)
     {
         // 1. Cargar relaciones esenciales para el reporte
         $cuenta->load([
             'checkin.cliente.usuario',
             'checkin.habitacionEvento.tipoHabitacion',
+            'checkin.recepcionista.usuario', // Para obtener el nombre del recepcionista
             'transaccions' => function($query) {
                  // Cargar solo las transacciones y sus ítems
-                 $query->with(['servicio', 'platillo']);
+                 $query->where('estado', 'confirmada')->with(['servicio', 'platillo']);
             }
         ]);
         
@@ -469,80 +566,92 @@ class CuentaController extends Controller
         $fechaEntrada = Carbon::parse($checkin->fecha_entrada);
         $fechaSalida = $checkin->fecha_salida ? Carbon::parse($checkin->fecha_salida) : Carbon::now();
         
-        // Calcular noches/días de estancia
+        
         $noches = $fechaSalida->diffInDays($fechaEntrada);
         $noches = max(1, $noches); // Asegura mínimo 1 noche cobrada
+        $nochesValorEntero = $noches;
         $costoAlojamiento = $precioNoche * $noches;
         
-        // 2. Preparar Desglose de Items (Alojamiento + Transacciones)
         $desgloseItems = collect();
-        $totalConsumosActivos = 0;
-
-        // A. Cargo Base de Alojamiento (El primer cargo)
-        $desgloseItems->push([
-            'descripcion' => 'Alojamiento (' . $checkin->habitacionEvento->tipoHabitacion->nombre . ')',
-            'tipo' => 'Estancia',
-            'precio_unitario' => $precioNoche,
-            'cantidad' => $noches,
-            'subtotal' => $costoAlojamiento,
-            'estado' => 'CONFIRMADO',
-        ]);
-        $totalConsumosActivos += $costoAlojamiento;
+        $totalConsumosActivos = 0; // Se utilizará para el total_calculado
 
 
-        // B. Otros Consumos (Servicios/Platillos)
+        // 2.B. Otros Consumos (Servicios/Platillos)
         foreach ($cuenta->transaccions as $t) {
             $item = $t->servicio ?? $t->platillo;
             
-            $estadoStr = strtoupper($t->estado);
-            $esCancelado = ($estadoStr === 'CANCELADA');
+            // $estadoStr = strtoupper($t->estado);
+            // // La validación en el Blade usa 'CANCELADA' (todo en mayúsculas)
+            // $esCancelado = ($estadoStr === 'CANCELADA'); 
 
             $desgloseItems->push([
                 'descripcion' => $item->nombre ?? 'Cargo Desconocido',
                 'tipo' => $t->servicio_id ? 'Servicio' : 'Platillo',
                 'precio_unitario' => $item->precio ?? 0,
                 'cantidad' => $t->cantidad,
-                'subtotal' => $t->subtotal,
-                'estado' => $estadoStr,
+                'subtotal' => $item->precio * $t->cantidad,
+            //    'estado' => $estadoStr,
             ]);
 
-            // Sumar solo si no está cancelado (para el total calculado)
-            if (!$esCancelado) {
-                $totalConsumosActivos += $t->subtotal;
-            }
+            // // Sumar solo si no está cancelado (para el total calculado)
+            // if (!$esCancelado) {
+            //     $totalConsumosActivos += $t->subtotal;
+            // }
+        }
+    
+        
+        $fechaSalidaStr = $checkin->fecha_salida ? 
+                          Carbon::parse($checkin->fecha_salida)->format('d/m/Y H:i') : 
+                          'EN CURSO'; // Usamos 'EN CURSO' para el reporte
+
+        $logoPath = public_path('images/cedros_blanco.png'); 
+        $logoBase64 = null;
+
+        if (file_exists($logoPath)) {
+            $logoBase64 = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
         
-        // 3. Preparar los datos generales del reporte
         $datosReporte = [
-            'titulo' => 'REPORTE DE CONSUMOS Y ESTADÍA',
+            'titulo' => 'INVOICE PROFORMA',
+            'hotel' => [
+                'nombre' => 'HOTEL LOS CEDROS',
+                'nit' => '1029384756', 
+                'ubicacion' => 'Santa Cruz, Bolivia',
+                'telefono' => '+591 3 345 6789',
+                'logo_base64' => $logoBase64,
+            ],
             'cuenta' => [
                 'id' => $cuenta->id,
                 'fecha_emision' => Carbon::now()->format('d/m/Y H:i:s'),
                 'monto_total_db' => $cuenta->monto_total, 
                 'monto_pagado' => $cuenta->monto_pagado,
                 'saldo' => $cuenta->saldo,
-                'total_calculado' => $totalConsumosActivos, // Total de cargos activos
+                'total_calculado' => $totalConsumosActivos, 
             ],
             'cliente' => [
                 'nombre' => $checkin->cliente->usuario->name,
                 'email' => $checkin->cliente->usuario->email,
                 'telefono' => $checkin->cliente->usuario->telefono,
+                // Si necesitas el nombre del cliente que hizo la reserva (si es diferente al checkin)
+                // 'reservado_por' => $checkin->reserva?->cliente->usuario->name ?? $checkin->cliente->usuario->name, 
             ],
+            'recepcionista' => $checkin->recepcionista?->usuario->name ?? 'N/A',
             'estadia' => [
-                'habitacion_codigo' => $checkin->habitacionEvento->codigo,
-                'habitacion_nombre' => $checkin->habitacionEvento->nombre,
+                'habitacion_codigo' => $checkin->habitacionEvento->codigo . ' ' . $checkin->habitacionEvento->nombre,
+                'habitacion_nombre' => $checkin->habitacionEvento->tipoHabitacion->categoria->nombre,
                 'fecha_entrada' => $fechaEntrada->format('d/m/Y H:i'),
-                'fecha_salida' => $checkin->fecha_salida ? $fechaSalida->format('d/m/Y H:i') : 'EN CURSO',
-                'noches' => $noches,
+                'fecha_salida' => $fechaSalidaStr,
+                'noches' => $noches, // Incluimos noches
+                'fecha_reserva' => $checkin->reserva->fecha_reserva,
             ],
-            'desglose' => $desgloseItems, // Lista completa, incluyendo cancelados
+            'desglose' => $desgloseItems, // Array de ítems procesados
         ];
 
         // 4. Generar y Devolver el PDF
-        $pdf = Pdf::loadView('reportes.reporte_consumo', [
+        $pdf = Pdf::loadView('reportes.reporte_2', [
             'datosReporte' => $datosReporte
         ]);
-        return $pdf->download('REPORTE_CONSUMO_' . $cuenta->id . '.pdf');
+        return $pdf->download('INVOICE_PROFORMA_' . $cuenta->id . '.pdf');
     }
 
 }
