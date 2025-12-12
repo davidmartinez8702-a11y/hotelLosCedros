@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { usePage } from "@inertiajs/react";
-
+import roomDeluxe from "@/assets/promo.jpg";
 interface Promo {
   id: number;
   nombre: string;
@@ -127,15 +127,17 @@ const Promotions = () => {
                 className="animate-scale-in hover:shadow-[var(--shadow-elegant)] transition-all duration-300 group"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {/* ✨ Imagen de fondo opcional */}
+                {/* ✨ Imagen de fondo */}
                 {promo.image_url && (
                   <div className="relative h-48 overflow-hidden rounded-t-lg">
                     <img 
-                      src={promo.image_url} 
+                      // ✅ CORRECTO: Usar /storage/ para archivos guardados con Storage::disk('public')
+                      src={promo.image_url ? `/storage/${promo.image_url}` : roomDeluxe}
                       alt={promo.nombre}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        // Si falla, mostrar imagen por defecto
+                        e.currentTarget.src = roomDeluxe;
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -178,7 +180,7 @@ const Promotions = () => {
                   <Button 
                     variant="hero" 
                     className="w-full"
-                    onClick={() => window.location.href = '/reservas'}
+                    onClick={() => window.location.href = '/reservas/cliente'}
                   >
                     Reservar Ahora
                   </Button>

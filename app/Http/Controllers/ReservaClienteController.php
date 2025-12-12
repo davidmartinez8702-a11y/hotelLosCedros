@@ -240,6 +240,7 @@ class ReservaClienteController extends Controller
 
             // 4. Aplicar promoción (si existe)
             $descuento = 0;
+            $descuentoPorcentaje = 0;
             $promoId = null;
 
             if ($request->promo_id) {
@@ -251,6 +252,7 @@ class ReservaClienteController extends Controller
 
                 if ($promo) {
                     if ($promo->tipo_promo === 'descuento_porcentual') {
+                        $descuentoPorcentaje = $promo->valor;
                         $descuento = $subtotal * ($promo->valor / 100);
                     } else {
                         $descuento = min($promo->valor, $subtotal);
@@ -279,13 +281,14 @@ class ReservaClienteController extends Controller
                 'cliente_id' => $clienteId,
                 'fecha_reserva' => $fechaEntrada,
                 'dias_estadia' => $diasEstadia,
-                'adultos' => $request->adultos,
-                'infantes' => $request->infantes ?? 0,
+                'total_cantidad_adultos' => $request->adultos,  // ✅ Correcto
+                'total_cantidad_infantes' => $request->infantes,  // ✅ Correcto
                 'tipo_viaje' => $request->tipo_viaje,
-                'tipo_reserva' => $tipoReserva, // ✅ AGREGAR
+                'tipo_reserva' => 'web',
+                'estado' => 'confirmada',
                 'monto_total' => $total,
                 'pago_inicial' => $pagoInicial,
-                'estado' => $pagoInicial >= $total ? 'confirmada' : 'pendiente',
+                'porcentaje_descuento' => $descuentoPorcentaje,
                 'promo_id' => $promoId,
             ]);
 
@@ -293,13 +296,13 @@ class ReservaClienteController extends Controller
             foreach ($request->habitaciones as $hab) {
                 $tipoHabitacion = TipoHabitacion::findOrFail($hab['tipo_habitacion_id']);
 
-                for ($i = 0; $i < $hab['cantidad']; $i++) {
-                    Hospedaje::create([
-                        'reserva_id' => $reserva->id,
-                        'tipo_habitacion_id' => $tipoHabitacion->id,
-                        'precio_habitacion' => $tipoHabitacion->precio * $diasEstadia,
-                    ]);
-                }
+                // ✅ CREAR UN SOLO REGISTRO con la cantidad
+                Hospedaje::create([
+                    'reserva_id' => $reserva->id,
+                    'tipo_habitacion_id' => $tipoHabitacion->id,
+                    'cantidad' => $hab['cantidad'],  // ← Guardar la cantidad aquí
+                    'precio_habitacion' => $tipoHabitacion->precio * $diasEstadia * $hab['cantidad'],
+                ]);
             }
 
             // 7. Obtener o crear tipo de pago
