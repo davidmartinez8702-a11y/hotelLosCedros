@@ -132,8 +132,7 @@ export default function CheckinEdit({ checkin, recepcionistas, habitacionesEvent
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: route('dashboard') },
-                { title: 'Recepción', href: '#' },
+                { title: 'Recepción', href: route('recepcion.reservas.index') },
                 { title: 'Check-ins', href: route('recepcion.checkins.index') },
                 { title: `Editar #${checkin.id}`, href: route('recepcion.checkins.edit', checkin.id) },
             ]}

@@ -195,7 +195,7 @@ class ReservaController extends Controller
 
         $clienteAutenticadoId = $clienteAutenticado->id;
 
-        // 3. ✅ CORRECCIÓN: Filtrar por cliente_id, NO por id
+        
         $query = Reserva::with(['cliente.usuario', 'promo'])
             ->where('cliente_id', $clienteAutenticadoId); // ← CAMBIO AQUÍ
 

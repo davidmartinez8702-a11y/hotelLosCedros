@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from '@/types';
 import { SearchFilter } from '@/components/shared/SearchFilter';
 import { Plus, Eye, Pencil } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 // --- Interfaces de Tipos ---
 interface Categoria {
@@ -46,10 +47,7 @@ interface Props {
 }
 
 // Breadcrumbs
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Platillos', href: route('platillos.index') },
-];
+
 
 // Opciones de filtro de estado
 const ESTADO_OPTIONS = [
@@ -70,7 +68,12 @@ const formatCurrency = (amount: number): string => {
 export default function PlatillosPage({ platillos, filters = {} }: Props) {
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [estadoFilter, setEstadoFilter] = useState(filters.estado || 'todos');
+    const {path,title} = useDashboardRoute();
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        { title: 'Platillos', href: path },
+    ];
     const handleSearch = (search: string, estado: string) => {
         router.get(
             route('platillos.index'),

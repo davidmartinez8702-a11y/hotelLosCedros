@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from '@/types';
 import { SearchFilter } from '@/components/shared/SearchFilter';
 import { Plus, Eye, Pencil, Calendar, Users, Plane, Briefcase, Heart, PartyPopper, DoorOpen } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 // --- Interfaces (Adaptadas para el cliente) ---
 // El backend ya mapea estos campos
@@ -49,10 +50,7 @@ interface Props {
 }
 
 // Breadcrumbs
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Mis Reservas', href: route('clientes.mis-reservas.index') },
-];
+
 
 // Opciones de filtros
 const ESTADO_OPTIONS = [
@@ -300,6 +298,11 @@ export default function MisReservasIndex({ reservas, filters, cliente_nombre }: 
         },
     ];
 
+    const {title,path} = useDashboardRoute();
+        const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        { title: 'Mis Reservas', href: route('clientes.mis-reservas.index') },
+    ];
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Mis Reservas - ${cliente_nombre}`} />

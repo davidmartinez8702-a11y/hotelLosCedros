@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon, BookPlus, ClipboardCheck, Shapes, FolderCheck } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon, BookPlus, ClipboardCheck, Shapes, FolderCheck, FolderPlus } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -36,6 +36,20 @@ const mainNavItems: CustomNavItem[] = [
     //     roles: ['administrador', 'recepcionista', 'cliente'],
     // },
     {
+        title:'Dashboard',
+        //href: route('tipo-habitacion.index'),
+        href:route('bi.index-v2'),
+        icon:BoxIcon,
+        roles: ['administrador'],
+    },
+    {
+        title:'Dashboard',
+        //href: route('tipo-habitacion.index'),
+        href:route('clientes.dashboard'),
+        icon:BoxIcon,
+        roles: ['cliente'],
+    },
+    {
         title: 'Dashboard',
         href: route('recepcionista.dashboard'),
         icon: LayoutGrid,
@@ -45,6 +59,12 @@ const mainNavItems: CustomNavItem[] = [
         title: 'Mis Reservas',
         href: route('clientes.mis-reservas.index'),
         icon: FolderCheck,
+        roles: ['cliente'],
+    },
+    {
+        title: 'Nueva Reserva',
+        href: route('reservas.cliente.index'),
+        icon: FolderPlus,
         roles: ['cliente'],
     },
     {
@@ -97,13 +117,7 @@ const mainNavItems: CustomNavItem[] = [
     //     href:route('bi.index-dinamico'),
     //     icon:BoxIcon,
     // },
-    {
-        title:'BI',
-        //href: route('tipo-habitacion.index'),
-        href:route('bi.index-v2'),
-        icon:BoxIcon,
-        roles: ['administrador'],
-    },
+    
     {
         title:'Predicciones',
         //href: route('tipo-habitacion.index'),

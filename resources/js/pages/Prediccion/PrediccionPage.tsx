@@ -6,6 +6,7 @@ import { type BreadcrumbItem } from '@/types';
 import { route } from 'ziggy-js';
 import { Button } from '@/components/ui/button';
 import { FileDown } from 'lucide-react';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface Prediccion {
     date: string;
@@ -14,20 +15,20 @@ interface Prediccion {
     max: number;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    {
-        title: 'Predicciones',
-        href: route('predicciones.index'),
-    },
-];
-
 export default function PrediccionPage() {
     const [dias, setDias] = useState<number>(10);
     const [tipoPred, setTipoPred] = useState<'demanda' | 'ingresos' | 'cancelaciones'>('demanda');
     const [predicciones, setPredicciones] = useState<Prediccion[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const {path,title} = useDashboardRoute();
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        {
+            title: 'Predicciones',
+            href: route('predicciones.index'),
+        },
+    ];
 
     const handlePredict = async () => {
         setLoading(true);

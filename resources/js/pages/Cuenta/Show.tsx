@@ -176,8 +176,8 @@ interface Props {
 
 // Breadcrumbs
 const getBreadcrumbs = (cuentaId: number): BreadcrumbItem[] => [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Recepción', href: '#' },
+    // { title: 'Dashboard', href: route('dashboard') },
+    { title: "Recepción", href: route("recepcion.reservas.index") },
     { title: 'Cuentas', href: route('recepcion.checkins.index') },
     { title: `Cuenta #${cuentaId}`, href: '#' },
 ];

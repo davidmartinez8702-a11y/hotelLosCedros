@@ -24,6 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Users, TrendingUp, Calendar, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface ClienteSegmentado {
     id: number;
@@ -104,7 +105,11 @@ export default function KmeansVisualizacion() {
     const [estadisticas, setEstadisticas] = useState<EstadisticasResponse | null>(null);
     const [diasInactividad, setDiasInactividad] = useState(180);
     const [validacionDatos, setValidacionDatos] = useState<ValidacionDatos | null>(null);
-
+    const { title,path} = useDashboardRoute();
+    const breadcrumbs = [
+        { title, href: path },
+        { title: 'K-means', href: route('kmeans.index') },
+    ];
     // Colores para cada cluster
     const CLUSTER_COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', '#a4de6c'];
 
@@ -351,7 +356,7 @@ export default function KmeansVisualizacion() {
     };
 
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Segmentación K-means" />
 
             <div className="py-8">

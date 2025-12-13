@@ -11,16 +11,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Spinner } from '@/components/ui/spinner';
 import { Loader2, Zap } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: route('dashboard') }, 
-    { title: 'UI Showcase', href: route('configuracion.index') } 
-];
 
 export default function ConfiguracionPage() {
     const [inputValue, setInputValue] = useState('Ejemplo de Input');
-
+    const {title,path} = useDashboardRoute();
+    const breadcrumbs = [
+        { title, href: path }, 
+        { title: 'UI Showcase', href: route('configuracion.index') } 
+    ];
     return (
         // Usamos el layout principal de la aplicación
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -29,7 +30,7 @@ export default function ConfiguracionPage() {
             <div className="py-8 lg:py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     
-                    <h1 className="text-3xl font-extrabold text-gray-200 border-b pb-2">
+                    <h1 className="text-3xl font-extrabold text-primary border-b pb-2">
                         Componentes del Design System
                     </h1>
                     

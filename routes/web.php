@@ -14,6 +14,7 @@ use App\Http\Controllers\PrediccionController;
 use App\Http\Controllers\Recepcion\ReservaRecepcionController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\HabitacionEventoController;
 use App\Http\Controllers\PromoController;
@@ -173,6 +174,7 @@ Route::prefix('recepcion')->name('recepcion.')->middleware(['auth'])->group(func
 Route::prefix('clientes')->name('clientes.')->middleware(['auth'])->group(function () {
     // Rutas de Reservas
     Route::get('/', [ReservaController::class, 'misReservas'])->name('mis-reservas.index');
+    Route::get('/dashboard', [ClienteController::class, 'dashboardCliente'])->name('dashboard');
     Route::get('/{reserva}', [ReservaController::class, 'show'])->name('mis-reservas.show');
     // Route::get('/reservas/create', [ReservaController::class, 'create'])->name('reservas.create');
     // Route::get('/reservas/{reserva}', [ReservaController::class, 'show'])->name('reservas.show');
