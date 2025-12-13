@@ -63,7 +63,7 @@ class User extends Authenticatable
     }
     public function documento()
     {
-        return $this->hasOne(Documento::class);
+        return $this->hasOne(Documento::class,'usuario_id');
     }
     public function comentarios()
     {

@@ -15,6 +15,7 @@ import {
     Filter,
 } from 'lucide-react'; // ✅ Usando lucide-react
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface Promo {
     id: number;
@@ -53,9 +54,9 @@ interface Props {
 export default function Index({ promos, filtros }: Props) {
     const [busqueda, setBusqueda] = useState('');
     const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
-
+    const {title,path} = useDashboardRoute();
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: route('dashboard') }, // ✅ CORRECCIÓN: label → title
+        { title, href: path }, // ✅ CORRECCIÓN: label → title
         { title: 'Promociones', href: route('promos.index') }, // ✅ CORRECCIÓN: label → title
     ];
 

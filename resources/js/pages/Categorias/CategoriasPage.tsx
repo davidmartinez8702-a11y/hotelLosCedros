@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from '@/types';
 import { SearchFilter } from '@/components/shared/SearchFilter';
 import { Plus, Eye, Pencil, Bed, UtensilsCrossed, ConciergeBell } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface Categoria {
     id: number;
@@ -42,13 +43,7 @@ interface Props {
     };
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    {
-        title: 'Categorías',
-        href: '/categorias',
-    },
-];
+
 
 const ESTADO_OPTIONS = [
     { value: 'todos', label: 'Todos los estados' },
@@ -98,6 +93,14 @@ const getTipoConfig = (tipo: string) => {
 };
 
 export default function CategoriasPage({ categorias, filters = {} }: Props) {
+    const {path,title} = useDashboardRoute();
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        {
+            title: 'Categorías',
+            href: path,
+        },
+    ];
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [estadoFilter, setEstadoFilter] = useState(filters.estado || 'todos');
     const [tipoFilter, setTipoFilter] = useState(filters.tipo || 'todos');

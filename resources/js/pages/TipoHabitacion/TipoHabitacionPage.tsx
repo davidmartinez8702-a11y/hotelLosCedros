@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from "@/types";
 import { SearchFilter } from "@/components/shared/SearchFilter";
 import { Plus, Eye, Pencil } from "lucide-react";
 import { route } from "ziggy-js";
+import { useDashboardRoute } from "@/hooks/useDashboardRoute";
 
 interface Categoria{
     id: number;
@@ -55,10 +56,7 @@ interface Props {
 }
 
 // Breadcrumbs
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: "Dashboard", href: route("dashboard") },
-    { title: "Tipo de Habitaciones", href: route("tipo-habitacion.index") },
-];
+
 
 // Opciones de filtro
 const ESTADO_OPTIONS = [
@@ -87,6 +85,11 @@ export default function TipoHabitacionPage({ tipoHabitaciones, categorias, filte
     const [estadoFilter, setEstadoFilter] = useState(filters.estado || "todos");
     const [tipoFilter, setTipoFilter] = useState(filters.tipo || "todos");
     const [categoriaFilter, setCategoriaFilter] = useState(filters.categoria_id || "todos");
+    const {path,title} = useDashboardRoute();
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        { title: "Tipo de Habitaciones", href: route("tipo-habitacion.index") },
+    ];
 
     const handleSearch = (search: string, estado: string, tipo: string, categoria_id: string) => {
         router.get(

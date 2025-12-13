@@ -15,6 +15,7 @@ import { type BreadcrumbItem } from '@/types';
 import { SearchFilter } from '@/components/shared/SearchFilter';
 import { Plus, Eye, Pencil, Calendar, Users, Plane, Briefcase, Heart, PartyPopper, DoorOpen } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 // --- Interfaces ---
 interface Cliente {
@@ -56,11 +57,7 @@ interface Props {
 }
 
 // Breadcrumbs
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Recepción', href: '#' },
-    { title: 'Reservas', href: route('recepcion.reservas.index') },
-];
+
 
 // Opciones de filtros
 const ESTADO_OPTIONS = [
@@ -156,7 +153,13 @@ export default function IndexRecepcion({ reservas, filters = {} }: Props) {
     const [estadoFilter, setEstadoFilter] = useState(filters.estado || 'todos');
     const [tipoReservaFilter, setTipoReservaFilter] = useState(filters.tipo_reserva || 'todos');
     const [tipoViajeFilter, setTipoViajeFilter] = useState(filters.tipo_viaje || 'todos');
-
+    const {title,path} = useDashboardRoute();
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        { title: 'Recepción', href: '#' },
+        { title: 'Reservas', href: route('recepcion.reservas.index') },
+    ];
+    
     // Función para manejar la búsqueda y filtrado
     const handleSearch = (search: string, estado: string, tipoReserva: string, tipoViaje: string) => {
         router.get(

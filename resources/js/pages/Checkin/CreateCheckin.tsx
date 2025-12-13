@@ -315,8 +315,8 @@ export default function CheckinCreate({
     return (
         <AppLayout 
             breadcrumbs={[
-                { title: 'Dashboard', href: route('dashboard') },
-                { title: 'Recepción', href: '#' },
+                // { title: 'Dashboard', href: route('dashboard') },
+                { title: "Recepción", href: route("recepcion.reservas.index") },
                 { title: 'Check-ins', href: route('recepcion.checkins.index') },
                 { title: `Nuevo Check-in`, href: '#' },
             ]}

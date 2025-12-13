@@ -31,6 +31,7 @@ import EntityHeader from "@/shared/components/EntityHeader";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 import { DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { useDashboardRoute } from "@/hooks/useDashboardRoute";
 
 // --- Interfaces basadas en el Controlador ---
 interface ReservaData {
@@ -98,10 +99,11 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function ShowRecepcion({ reserva, hospedajes_solicitados, checkins_asignados }: Props) {
+    const { path, title } = useDashboardRoute();
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Dashboard", href: route("dashboard") },
+                { title: title, href: path },
                 { title: "Reservas", href: route("recepcion.reservas.index") },
                 { title: `Reserva #${reserva.id}`, href: "#" },
             ]}

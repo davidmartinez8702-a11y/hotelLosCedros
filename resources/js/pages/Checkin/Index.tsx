@@ -34,6 +34,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/shared/components/CalendarioModified';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 
 // --- Interfaces ---
@@ -96,11 +97,7 @@ interface Props {
 }
 
 // Breadcrumbs
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Recepción', href: '#' },
-    { title: 'Check-ins', href: route('recepcion.checkins.index') },
-];
+
 
 // Formatear fecha
 const formatDate = (dateString: string | null): string => {
@@ -132,7 +129,14 @@ export default function CheckinIndex({ checkins, clientes, filters = {} }: Props
     const [fechaHasta, setFechaHasta] = useState<Date | undefined>(
         filters.fecha_hasta ? new Date(filters.fecha_hasta) : undefined
     );
+    const {title,path} = useDashboardRoute();
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        { title: 'Recepción', href: route('recepcion.reservas.index') },
+        { title: 'Check-ins', href: route('recepcion.checkins.index') },
+    ];
+    
     // Función para manejar la búsqueda y filtrado
     const handleFilter = (
         search: string, 

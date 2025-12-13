@@ -53,15 +53,10 @@ const ROLE_OPTIONS: FilterOption[] = [
 
 const ITEMS_PER_PAGE = 5;
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: route('dashboard') },
-    {
-        title: 'Usuarios',
-        href: '/usuarios',
-    },
-];
+
 
 import { router } from '@inertiajs/react';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface Props {
     usuariosPaginados: {
@@ -80,6 +75,14 @@ interface Props {
 }
 
 export default function UsuariosPage({ usuariosPaginados, filters = {} }: Props) {
+    const {path,title} = useDashboardRoute();
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title, href: path },
+        {
+            title: 'Usuarios',
+            href: path,
+        },
+    ];
     const [searchValue, setSearchValue] = useState(filters.search || '');
     const [roleFilter, setRoleFilter] = useState(filters.role || 'todos');
     const [filterBy, setFilterBy] = useState<'username' | 'email'>('username'); // Solo visual por ahora

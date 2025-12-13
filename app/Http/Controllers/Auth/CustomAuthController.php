@@ -31,11 +31,11 @@ class CustomAuthController extends Controller
 
             // Redirigir según el rol del usuario
             if ($user->hasRole('administrador')) {
-                return redirect()->route('dashboard.administrador');
+                return redirect()->route('bi.index-v2');
             } elseif ($user->hasRole('recepcionista')) {
                 return redirect()->route('recepcionista.dashboard');
             } elseif ($user->hasRole('cliente')) {
-                return redirect()->route('dashboard.cliente');
+                return redirect()->route('clientes.dashboard');
             }
 
             // Redirigir a una ruta por defecto si no tiene un rol específico

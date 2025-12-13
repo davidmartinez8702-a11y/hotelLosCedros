@@ -46,8 +46,8 @@ export const estadoConfig = {
 };
 
 export const getBreadcrumbs = (cuentaId: number) => [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Recepción', href: '#' },
-    { title: 'Cuentas', href: route('recepcion.checkins.index') },
+    // { title: 'Dashboard', href: route('dashboard') },
+    { title: "Recepción", href: route("recepcion.reservas.index") },
+    { title: 'Checkins', href: route('recepcion.checkins.index') },
     { title: `Cuenta #${cuentaId}`, href: '#' },
 ];

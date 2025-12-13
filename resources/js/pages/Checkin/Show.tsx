@@ -123,8 +123,8 @@ export default function CheckinShow({ checkin }: Props) {
     return (
         <AppLayout
             breadcrumbs={[
-                { title: "Dashboard", href: route("dashboard") },
-                { title: "Recepción", href: "#" },
+                // { title: "Dashboard", href: route("dashboard") },
+                { title: "Recepción", href: route("recepcion.reservas.index") },
                 { title: "Check-ins", href: route("recepcion.checkins.index") },
                 { title: `Check-in #${checkin.id}`, href: route("recepcion.checkins.show", checkin.id) },
             ]}

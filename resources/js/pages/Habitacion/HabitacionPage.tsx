@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { DataTable } from '@/shared/ui/data-table';
 import type { BreadcrumbItem } from '@/types';
+import { useDashboardRoute } from '@/hooks/useDashboardRoute';
 
 interface TipoHabitacion {
     id: number;
@@ -87,9 +88,9 @@ interface Props {
 
 export default function HabitacionPage({ habitaciones, pisos, tiposHabitacion, estadisticas, filters }: Props) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
-
+    const {path,title} = useDashboardRoute();
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
+        { title, href: path },
         { title: 'Habitaciones', href: '/habitaciones' },
     ];
 
