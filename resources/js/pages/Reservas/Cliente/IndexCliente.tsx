@@ -115,7 +115,7 @@ export default function IndexCliente() {
                 {/* Hero Section */}
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-foreground mb-4">
-                        🏨 Reserva tu Estadía Perfecta
+                        Reserva tu Estadía Perfecta
                     </h1>
                     <p className="text-xl text-muted-foreground">
                         Encuentra la habitación ideal para tu viaje
