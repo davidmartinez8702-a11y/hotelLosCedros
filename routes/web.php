@@ -26,7 +26,8 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Ramsey\Uuid\Type\Time;
 use App\Models\Promo;
-use App\Models\TipoHabitacion; // ✅ Importar el modelo
+use App\Models\TipoHabitacion;
+use App\Models\Comentario; // ✅ Importar el modelo
 
 Route::get('/', function () {
     // ✅ Obtener promociones públicas
@@ -38,12 +39,12 @@ Route::get('/', function () {
         ->limit(6)
         ->get(['id', 'nombre', 'descripcion', 'image_url', 'tipo_promo', 'descuento_porcentaje', 'precio_total_paquete', 'precio_normal', 'fecha_fin']);
 
-    // ✅ Obtener tipos de habitación aleatorios (solo habitaciones, no eventos)
+    // ✅ Obtener tipos de habitación aleatorios
     $habitaciones = TipoHabitacion::where('estado', 'activo')
-        ->where('tipo', 'habitacion') // Solo habitaciones, no salones de eventos
-        ->with('imagenes') // Cargar imágenes relacionadas
+        ->where('tipo', 'habitacion')
+        ->with('imagenes')
         ->inRandomOrder()
-        ->limit(4) // Mostrar 4 habitaciones aleatorias
+        ->limit(4)
         ->get()
         ->map(function ($habitacion) {
             return [
@@ -54,14 +55,42 @@ Route::get('/', function () {
                 'capacidad_total' => $habitacion->capacidad_total,
                 'capacidad_adultos' => $habitacion->capacidad_adultos,
                 'capacidad_infantes' => $habitacion->capacidad_infantes,
-                // ✅ Obtener la primera imagen o null
                 'imagen' => $habitacion->imagenes->first()?->url ?? null,
+            ];
+        });
+
+    // ✅ Obtener 10 comentarios visibles aleatorios
+    $comentarios = Comentario::where('estado', 'visible')
+        ->with('usuario:id,name,profile_icon') // Cargar solo campos necesarios del usuario
+        ->inRandomOrder()
+        ->limit(10)
+        ->get()
+        ->map(function ($comentario) {
+            // Obtener iniciales del nombre
+            $nombreCompleto = $comentario->usuario->name ?? 'Usuario';
+            $palabras = explode(' ', $nombreCompleto);
+            $iniciales = '';
+            foreach ($palabras as $palabra) {
+                $iniciales .= strtoupper(substr($palabra, 0, 1));
+            }
+            
+            return [
+                'id' => $comentario->id,
+                'nombre' => $nombreCompleto,
+                'iniciales' => substr($iniciales, 0, 2), // Solo 2 iniciales
+                'calificacion' => $comentario->calificacion,
+                'contenido' => $comentario->contenido,
+                'fecha' => $comentario->created_at->diffForHumans(), // "Hace 2 días"
+                'avatar' => $comentario->usuario->profile_icon 
+                    ? "/storage/{$comentario->usuario->profile_icon}" 
+                    : null,
             ];
         });
 
     return inertia('Landing/LandingPage', [
         'promociones' => $promociones,
-        'habitaciones' => $habitaciones, // ✅ Pasar habitaciones
+        'habitaciones' => $habitaciones,
+        'comentarios' => $comentarios, // ✅ Pasar comentarios
     ]);
 })->name('home');
 
