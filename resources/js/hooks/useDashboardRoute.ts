@@ -37,5 +37,5 @@ export const useDashboardRoute = () => {
             break;
     }
 
-    return { path, title };
+    return { path, title ,userRole};
 };
