@@ -48,14 +48,14 @@ interface Reserva {
     cliente: Cliente;
     fecha_reserva: string;
     dias_estadia: number;
-    adultos: number;
-    infantes: number;
+    adultos: number;  // ✅ Este viene de total_cantidad_adultos
+    infantes: number;  // ✅ Este viene de total_cantidad_infantes
     tipo_viaje: string;
     monto_total: number;
     pago_inicial: number;
     estado: string;
     hospedajes: Hospedaje[];
-    promo?: Promo;
+    promo: Promo | null;
     created_at: string;
 }
 

@@ -27,19 +27,42 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Ramsey\Uuid\Type\Time;
 use App\Models\Promo;
+use App\Models\TipoHabitacion; // ✅ Importar el modelo
 
 Route::get('/', function () {
-    // ✅ Obtener solo promociones públicas (sin segmentos específicos)
+    // ✅ Obtener promociones públicas
     $promociones = Promo::where('estado', 'activa')
         ->where('fecha_inicio', '<=', now())
         ->where('fecha_fin', '>=', now())
-        ->whereDoesntHave('segmentos') // Solo las que aplican a todos
+        ->whereDoesntHave('segmentos')
         ->orderBy('prioridad', 'desc')
-        ->limit(6) // Máximo 6 para el carrusel
+        ->limit(6)
         ->get(['id', 'nombre', 'descripcion', 'image_url', 'tipo_promo', 'descuento_porcentaje', 'precio_total_paquete', 'precio_normal', 'fecha_fin']);
 
+    // ✅ Obtener tipos de habitación aleatorios (solo habitaciones, no eventos)
+    $habitaciones = TipoHabitacion::where('estado', 'activo')
+        ->where('tipo', 'habitacion') // Solo habitaciones, no salones de eventos
+        ->with('imagenes') // Cargar imágenes relacionadas
+        ->inRandomOrder()
+        ->limit(4) // Mostrar 4 habitaciones aleatorias
+        ->get()
+        ->map(function ($habitacion) {
+            return [
+                'id' => $habitacion->id,
+                'nombre' => $habitacion->nombre,
+                'descripcion' => $habitacion->descripcion,
+                'precio' => $habitacion->precio,
+                'capacidad_total' => $habitacion->capacidad_total,
+                'capacidad_adultos' => $habitacion->capacidad_adultos,
+                'capacidad_infantes' => $habitacion->capacidad_infantes,
+                // ✅ Obtener la primera imagen o null
+                'imagen' => $habitacion->imagenes->first()?->url ?? null,
+            ];
+        });
+
     return inertia('Landing/LandingPage', [
-        'promociones' => $promociones
+        'promociones' => $promociones,
+        'habitaciones' => $habitaciones, // ✅ Pasar habitaciones
     ]);
 })->name('home');
 
@@ -349,7 +372,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kmeans/logs', [ClasificacionClienteController::class, 'verLogs'])
         ->name('kmeans.logs');
 });
-
 
 // Rutas de Promociones
 Route::middleware(['auth'])->group(function () {

@@ -23,11 +23,19 @@ interface Reserva {
     id: number;
     fecha_reserva: string;
     dias_estadia: number;
-    estado: 'pendiente' | 'confirmada' | 'cancelada' | 'completada' | 'en_curso';
-    tipo_reserva: 'habitacion' | 'evento';
-    tipo_viaje: 'negocios' | 'turismo' | 'familiar' | 'luna_de_miel' | 'otro';
+    estado: string;
+    tipo_reserva: string;
+    tipo_viaje: string;
     pago_inicial: number;
     monto_total: number;
+    promo: {
+        id: number;
+        nombre: string;
+    } | null;
+    created_at: string;
+    // ✅ Si usas estos campos, asegúrate que vengan del backend como:
+    total_cantidad_adultos?: number;
+    total_cantidad_infantes?: number;
 }
 
 interface Props {
