@@ -99,7 +99,7 @@ class ClienteController extends Controller
             ->where('fecha_reserva', '>', Carbon::today())
             ->whereIn('estado', ['pendiente', 'confirmada'])
             ->orderBy('fecha_reserva', 'asc')
-            ->limit(3)
+            ->limit(10)
             ->get();
 
         // 4. Historial de Reservas (Pagado/Finalizado)
