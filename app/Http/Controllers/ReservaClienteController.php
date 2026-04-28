@@ -54,27 +54,23 @@ class ReservaClienteController extends Controller
         $disponibilidad = [];
 
         foreach ($tiposHabitacion as $tipo) {
-            // Obtener todas las habitaciones de este tipo
+            // ✅ CORRECCIÓN: Obtener TODAS las habitaciones físicas de este tipo
             $habitacionesTotales = HabitacionEvento::where('tipo_habitacion_id', $tipo->id)
                 ->where('estado', 'disponible')
                 ->count();
 
-            // Contar habitaciones ocupadas en el rango de fechas
-            $habitacionesOcupadas = Checkin::whereHas('habitacionEvento', function($query) use ($tipo) {
-                    $query->where('tipo_habitacion_id', $tipo->id);
-                })
+            // ✅ CORRECCIÓN: Contar HOSPEDAJES (reservas) en el rango de fechas
+            // Hospedaje es donde se guarda qué tipo_habitacion fue reservada y cantidad
+            $habitacionesReservadas = \App\Models\Hospedaje::where('tipo_habitacion_id', $tipo->id)
+                ->join('reservas', 'hospedajes.reserva_id', '=', 'reservas.id')
                 ->where(function($query) use ($fechaEntrada, $fechaSalida) {
-                    $query->whereBetween('fecha_entrada', [$fechaEntrada, $fechaSalida])
-                        ->orWhereBetween('fecha_salida', [$fechaEntrada, $fechaSalida])
-                        ->orWhere(function($q) use ($fechaEntrada, $fechaSalida) {
-                            $q->where('fecha_entrada', '<=', $fechaEntrada)
-                              ->where('fecha_salida', '>=', $fechaSalida);
-                        });
+                    // PostgreSQL: Se superponen si: fecha_reserva < fecha_salida Y (fecha_reserva + dias_estadia) > fecha_entrada
+                    $query->whereRaw('reservas.fecha_reserva < ?', [$fechaSalida->toDateString()])
+                          ->whereRaw('reservas.fecha_reserva + reservas.dias_estadia * interval \'1 day\' > ?', [$fechaEntrada->toDateString()]);
                 })
-                ->distinct('habitacion_evento_id')
-                ->count('habitacion_evento_id');
+                ->sum('hospedajes.cantidad');
 
-            $habitacionesDisponibles = $habitacionesTotales - $habitacionesOcupadas;
+            $habitacionesDisponibles = $habitacionesTotales - (int)($habitacionesReservadas ?? 0);
 
             if ($habitacionesDisponibles > 0) {
                 $disponibilidad[] = [
@@ -183,7 +179,7 @@ class ReservaClienteController extends Controller
             $clienteId = $request->cliente_id;
 
             if (!$clienteId) {
-                // ✅ Cliente nuevo (invitado) - Crear usuario primero
+                // Cliente nuevo (invitado) - Crear usuario primero
                 $request->validate([
                     'nombre' => 'required|string|max:255',
                     'apellido' => 'nullable|string|max:255',
@@ -265,7 +261,7 @@ class ReservaClienteController extends Controller
             $pagoInicial = $request->monto_pago;
             $saldoPendiente = $total - $pagoInicial;
 
-            // ✅ DETERMINAR TIPO DE RESERVA SEGÚN EL PAGO
+            // DETERMINAR TIPO DE RESERVA SEGÚN EL PAGO
             $tipoReserva = 'parcial'; // Por defecto
             
             if ($request->metodo_pago === 'garante') {
@@ -281,8 +277,8 @@ class ReservaClienteController extends Controller
                 'cliente_id' => $clienteId,
                 'fecha_reserva' => $fechaEntrada,
                 'dias_estadia' => $diasEstadia,
-                'total_cantidad_adultos' => $request->adultos,  // ✅ Correcto
-                'total_cantidad_infantes' => $request->infantes,  // ✅ Correcto
+                'total_cantidad_adultos' => $request->adultos, 
+                'total_cantidad_infantes' => $request->infantes, 
                 'tipo_viaje' => $request->tipo_viaje,
                 'tipo_reserva' => 'web',
                 'estado' => 'confirmada',
@@ -296,7 +292,7 @@ class ReservaClienteController extends Controller
             foreach ($request->habitaciones as $hab) {
                 $tipoHabitacion = TipoHabitacion::findOrFail($hab['tipo_habitacion_id']);
 
-                // ✅ CREAR UN SOLO REGISTRO con la cantidad
+                // CREAR UN SOLO REGISTRO con la cantidad
                 Hospedaje::create([
                     'reserva_id' => $reserva->id,
                     'tipo_habitacion_id' => $tipoHabitacion->id,
@@ -548,21 +544,16 @@ class ReservaClienteController extends Controller
                     ->where('estado', 'disponible')
                     ->count();
 
-                $habitacionesOcupadas = Checkin::whereHas('habitacionEvento', function($query) use ($tipo) {
-                        $query->where('tipo_habitacion_id', $tipo->id);
-                    })
+                // ✅ CORRECCIÓN: Usar Hospedaje en lugar de Checkin
+                $habitacionesReservadas = \App\Models\Hospedaje::where('tipo_habitacion_id', $tipo->id)
+                    ->join('reservas', 'hospedajes.reserva_id', '=', 'reservas.id')
                     ->where(function($query) use ($fechaEntrada, $fechaSalida) {
-                        $query->whereBetween('fecha_entrada', [$fechaEntrada, $fechaSalida])
-                            ->orWhereBetween('fecha_salida', [$fechaEntrada, $fechaSalida])
-                            ->orWhere(function($q) use ($fechaEntrada, $fechaSalida) {
-                                $q->where('fecha_entrada', '<=', $fechaEntrada)
-                                  ->where('fecha_salida', '>=', $fechaSalida);
-                            });
+                        $query->whereRaw('reservas.fecha_reserva < ?', [$fechaSalida->toDateString()])
+                              ->whereRaw('reservas.fecha_reserva + reservas.dias_estadia * interval \'1 day\' > ?', [$fechaEntrada->toDateString()]);
                     })
-                    ->distinct('habitacion_evento_id')
-                    ->count('habitacion_evento_id');
+                    ->sum('hospedajes.cantidad');
 
-                $tipo->disponibles = $habitacionesTotales - $habitacionesOcupadas;
+                $tipo->disponibles = $habitacionesTotales - (int)($habitacionesReservadas ?? 0);
                 return $tipo;
             })
             ->filter(function($tipo) {

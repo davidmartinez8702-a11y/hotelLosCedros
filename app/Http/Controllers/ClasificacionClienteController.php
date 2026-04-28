@@ -193,7 +193,7 @@ class ClasificacionClienteController extends Controller
                 ], 400);
             }
 
-            Log::info('📤 Enviando datos al microservicio:', [
+            Log::info(' Enviando datos al microservicio:', [
                 'total_clientes' => count($reservasParaClasificar),
                 'primer_registro' => $reservasParaClasificar[0] ?? null
             ]);
@@ -206,7 +206,7 @@ class ClasificacionClienteController extends Controller
                     $reservasParaClasificar
                 );
 
-            Log::info('📥 Respuesta del microservicio:', [
+            Log::info(' Respuesta del microservicio:', [
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);

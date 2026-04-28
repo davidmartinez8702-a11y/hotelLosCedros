@@ -34,7 +34,7 @@ class UserClienteSeeder extends Seeder
 
     /**
      * Crear usuarios específicos (testing/staff)
-     * ✅ Algunos son clientes, otros NO (admins, recepcionistas)
+     *  Algunos son clientes, otros NO (admins, recepcionistas)
      */
     private function crearUsuariosEspecificos(): void
     {
@@ -55,7 +55,7 @@ class UserClienteSeeder extends Seeder
                 'email' => 'anagomez@gmail.com',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => Carbon::now(),
-                'es_cliente' => true, // ✅ SÍ es cliente
+                'es_cliente' => true, 
             ],
             [
                 'name' => 'Luis Martínez',
@@ -67,7 +67,7 @@ class UserClienteSeeder extends Seeder
                 'email' => 'luismartinez@gmail.com',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => Carbon::now(),
-                'es_cliente' => true, // ✅ SÍ es cliente
+                'es_cliente' => true, 
             ],
             [
                 'name' => 'María Pérez',
@@ -79,7 +79,7 @@ class UserClienteSeeder extends Seeder
                 'email' => 'mariaperez@gmail.com',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => Carbon::now(),
-                'es_cliente' => true, // ✅ SÍ es cliente
+                'es_cliente' => true, 
             ],
             [
                 'name' => 'Roberto Sánchez',
@@ -91,7 +91,7 @@ class UserClienteSeeder extends Seeder
                 'email' => 'robertosanchez@gmail.com',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => Carbon::now(),
-                'es_cliente' => true, // ✅ SÍ es cliente
+                'es_cliente' => true, 
             ],
 
             // ============================
@@ -138,19 +138,19 @@ class UserClienteSeeder extends Seeder
                     $tipoUsuario = $esCliente ? '👤 Cliente' : '👨‍💼 Staff';
                     $this->command->warn("   🔄 Ya existe: {$data['name']} ({$tipoUsuario})");
                     
-                    // ✅ Si debe ser cliente pero no tiene registro, crearlo
+                    //  Si debe ser cliente pero no tiene registro, crearlo
                     if ($esCliente && !Cliente::find($userExistente->id)) {
                         Cliente::create(['id' => $userExistente->id]);
-                        $this->command->info("      └── ✅ Cliente vinculado");
+                        $this->command->info("      └──  Cliente vinculado");
                     }
                 } else {
                     // Crear nuevo usuario
                     $user = User::create($data);
                     $creados++;
                     $tipoUsuario = $esCliente ? '👤 Cliente' : '👨‍💼 Staff';
-                    $this->command->info("   ✅ Creado: {$data['name']} ({$tipoUsuario})");
+                    $this->command->info("    Creado: {$data['name']} ({$tipoUsuario})");
 
-                    // ✅ Solo crear cliente si corresponde
+                    //  Solo crear cliente si corresponde
                     if ($esCliente) {
                         Cliente::create(['id' => $user->id]);
                         $this->command->info("      └── 👤 Registro en tabla clientes");
@@ -172,7 +172,7 @@ class UserClienteSeeder extends Seeder
     {
         $faker = Faker::create('es_ES');
         
-        // ✅ CONFIGURACIÓN: 2000 usuarios-clientes nuevos
+        //  CONFIGURACIÓN: 2000 usuarios-clientes nuevos
         $cantidadUsuarios = 2000;
         $batchSize = 500;
         $creados = 0;
