@@ -3,6 +3,7 @@
 use App\CustomLoginResponse;
 use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\ChatN8nController;
 use App\Http\Controllers\BIController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CategoriaController;
@@ -413,7 +414,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // 🏨 Habitaciones Físicas (accesible para todos los autenticados)
+    //Habitaciones Físicas (accesible para todos los autenticados)
     Route::resource('habitaciones', HabitacionEventoController::class);
     Route::post('habitaciones/{habitacione}/cambiar-estado', [HabitacionEventoController::class, 'cambiarEstado'])
         ->name('habitaciones.cambiar-estado');
@@ -436,3 +437,16 @@ Route::post('/api/reservas/cliente/calcular-precio', [ReservaClienteController::
 Route::get('/api/reservas/cliente/promociones', [ReservaClienteController::class, 'obtenerPromociones']);
 Route::post('/api/reservas/cliente', [ReservaClienteController::class, 'store']); // ✅ ESTA ES LA IMPORTANTE
 Route::post('/api/reservas/{reserva}/reenviar-email', [ReservaClienteController::class, 'reenviarEmail']);
+
+// API Chat N8N (Autenticado)
+Route::post('/api/chat/send', [ChatN8nController::class, 'send'])
+    ->middleware(['auth', 'verified'])
+    ->name('api.chat.send');
+
+// ============================================
+// RUTAS DE CHAT N8N (Solo Administradores)
+// ============================================
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/chat-n8n', fn() => Inertia::render('ChatN8n/Index'))
+        ->name('chat-n8n.index');
+});

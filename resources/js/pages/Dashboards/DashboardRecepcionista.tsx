@@ -253,7 +253,7 @@ export default function DashboardRecepcionista({ stats, charts, listas }: Props)
                                     {listas.salidas.length > 0 ? listas.salidas.map((ci) => (
                                         <div key={ci.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                             <div className="space-y-1">
-                                                <p className="font-bold text-sm">{ci.cliente.user.name}</p>
+                                                {/* <p className="font-bold text-sm">{ci.cliente.user.name}</p> */}
                                                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                     <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-none">
                                                         Hab: {ci.habitacion_evento.codigo}

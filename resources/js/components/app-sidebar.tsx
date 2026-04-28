@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { SharedData, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon, BookPlus, ClipboardCheck, Shapes, FolderCheck, FolderPlus } from 'lucide-react';
+import { BookOpen, CpuIcon, Folder, LayoutGrid, UserIcon, Tags, NfcIcon, UtensilsCrossed, HotelIcon, BoxIcon, DnaIcon, BookPlus, ClipboardCheck, Shapes, FolderCheck, FolderPlus, MessageCircle } from 'lucide-react';
 //import SolarPanelIcon from '@/components/shared/SolarPanelIcon';
 import AppLogo from './app-logo';
 import usuarios from '@/routes/usuarios';
@@ -155,6 +155,12 @@ const mainNavItems: CustomNavItem[] = [
         href: configuracion.index(),
         icon: CpuIcon,
         roles: ['administrador', 'recepcionista'],
+    },
+    {
+        title: 'Chat N8N',
+        href: route('chat-n8n.index'),
+        icon: MessageCircle,
+        roles: ['administrador'],
     },
 ];
 
