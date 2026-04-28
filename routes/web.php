@@ -438,9 +438,10 @@ Route::get('/api/reservas/cliente/promociones', [ReservaClienteController::class
 Route::post('/api/reservas/cliente', [ReservaClienteController::class, 'store']); // ✅ ESTA ES LA IMPORTANTE
 Route::post('/api/reservas/{reserva}/reenviar-email', [ReservaClienteController::class, 'reenviarEmail']);
 
-// API Chat N8N (Autenticado)
+// API Chat N8N (Autenticado, sin CSRF - se valida con auth)
 Route::post('/api/chat/send', [ChatN8nController::class, 'send'])
     ->middleware(['auth', 'verified'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->name('api.chat.send');
 
 // ============================================

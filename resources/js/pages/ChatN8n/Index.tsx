@@ -40,11 +40,6 @@ export default function ChatN8nPage() {
         setLoading(true);
 
         try {
-            // Obtener CSRF token
-            const csrfToken = document.head
-                .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
-                ?.content;
-
             // Configurar timeout de 150 segundos (2.5 minutos) para n8n
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 150000);
@@ -53,7 +48,6 @@ export default function ChatN8nPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || '',
                     'Accept': 'application/json',
                 },
                 credentials: 'same-origin',
